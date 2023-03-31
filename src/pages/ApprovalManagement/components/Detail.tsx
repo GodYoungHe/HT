@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useState} from "react";
+import React, {FC, useEffect, useRef, useState} from "react";
 import {Button, Card, Col, Divider, Empty, Image, message, Modal, Radio, Row, Select, Spin, Tabs} from "antd";
 import styles from '../index.less'
 import {
@@ -63,6 +63,8 @@ const Detail: FC<DetailProps> = (props) => {
 
     const [disable, setDisable] = useState(false)
 
+    const needSaveRef = useRef(false)
+
     const judgeDay = (day1: any, day2: any) => {
         const diffDays = day1.diff(moment(day2), 'days')
         if (diffDays > 7) {
@@ -88,6 +90,7 @@ const Detail: FC<DetailProps> = (props) => {
         onHoldForm.resetFields()
         approvalForm.resetFields()
         decisionForm.resetFields()
+        needSaveRef.current = false
     }
 
     const setInitState = (values: any) => {
@@ -149,12 +152,18 @@ const Detail: FC<DetailProps> = (props) => {
                         specialForm.setFieldsValue({
                             specialReason: res.data.GFCConfirmWithoutGPSReason
                         })
+                        if (!res.data.GFCConfirmWithoutGPSReason) {
+                            needSaveRef.current = true
+                        }
                     } else if (res.data.IsOverDistance === 1) {
                         // 超过1公里
                         setSpecial(1)
                         specialForm.setFieldsValue({
                             specialReason: res.data.GFCConfirmReason
                         })
+                        if (!res.data.GFCConfirmReason) {
+                            needSaveRef.current = true
+                        }
                     } else {
                         // 非特殊订单
                         setSpecial(0)
@@ -234,11 +243,12 @@ const Detail: FC<DetailProps> = (props) => {
         },
         {
             title: '未使用GPS拍照说明',
-            dataIndex: 'GFCConfirmWithoutGPSReason'
+            dataIndex: 'WithoutGPSRemark'
         },
         {
             title: '三方确认未使用GPS拍照原因',
-            dataIndex: 'WithoutGPSRemark'
+            dataIndex: 'GFCConfirmWithoutGPSReason'
+
         },
         {
             title: '拍照日期',
@@ -294,7 +304,12 @@ const Detail: FC<DetailProps> = (props) => {
         },
         {
             title: '用户确认用餐金额 ',
-            dataIndex: 'ActualAmount'
+            dataIndex: 'ActualAmount',
+            render: (item: any) => {
+                if(item){
+                    return parseFloat(item).toFixed(2)
+                }
+            }
         },
         {
             title: '用户确认用餐人数 ',
@@ -314,7 +329,12 @@ const Detail: FC<DetailProps> = (props) => {
         },
         {
             title: '预算金额 ',
-            dataIndex: 'MealBudget'
+            dataIndex: 'MealBudget',
+            render: (item: any) => {
+                if(item){
+                    return parseFloat(item).toFixed(2)
+                }
+            }
         },
         {
             title: '预算人数 ',
@@ -369,7 +389,7 @@ const Detail: FC<DetailProps> = (props) => {
             dataIndex: 'ReceiptReopenReason'
         },
         {
-            title: '小票Reopen原因描述 ',
+            title: '小票Reopen原因详述 ',
             dataIndex: 'ReceiptReopenReasonDetail'
         },
         {
@@ -469,6 +489,10 @@ const Detail: FC<DetailProps> = (props) => {
             dataIndex: 'MailImageSrc'
         },
         {
+            title: 'GFC审批状态',
+            dataIndex: 'GFCApproveState'
+        },
+        {
             title: '是否GFC审批通过 ',
             dataIndex: 'THApprove'
         },
@@ -515,6 +539,10 @@ const Detail: FC<DetailProps> = (props) => {
         {
             title: 'iSight时间 ',
             dataIndex: 'ISightDate'
+        },
+        {
+            title: 'iSight No. ',
+            dataIndex: 'ISightNo'
         },
     ]
 
@@ -573,7 +601,7 @@ const Detail: FC<DetailProps> = (props) => {
             onFilter: (value: string, record: any) => record.DinerName.indexOf(value) === 0,
         },
         {
-            title: '用餐人ID/MUD ID',
+            title: '用餐人ID/MUDID',
             dataIndex: 'DinerId',
             filters: mudidFilter,
             onFilter: (value: string, record: any) => record.DinerId.indexOf(value) === 0,
@@ -628,26 +656,29 @@ const Detail: FC<DetailProps> = (props) => {
     ]
 
     const saveSpecial = () => {
-        Modal.confirm({
-            title: '是否确认保存？',
-            onOk: () => {
-                setLoading(true)
-                specialForm.validateFields().then((values) => {
-                    UpdateConfirmReason({
-                        gcode: id,
-                        specialType: special,
-                        specialReason: values.specialReason
-                    }).then((res) => {
-                        if (res.data && res.data === 1) {
-                            message.success('保存成功！')
-                        } else {
-                            message.error('保存失败！')
-                        }
-                    }).finally(() => {
-                        setLoading(false)
+        specialForm.validateFields().then(() => {
+            Modal.confirm({
+                title: '是否确认保存？',
+                onOk: () => {
+                    setLoading(true)
+                    specialForm.validateFields().then((values) => {
+                        UpdateConfirmReason({
+                            gcode: id,
+                            specialType: special,
+                            specialReason: values.specialReason
+                        }).then((res) => {
+                            if (res.data && res.data === 1) {
+                                needSaveRef.current = false
+                                message.success('保存成功！')
+                            } else {
+                                message.error('保存失败！')
+                            }
+                        }).finally(() => {
+                            setLoading(false)
+                        })
                     })
-                })
-            }
+                }
+            })
         })
     }
 
@@ -725,6 +756,7 @@ const Detail: FC<DetailProps> = (props) => {
                     <Col span={8}>
                         <ProFormText
                             required
+                            rules={[{required: true, message: '该项必填！'}]}
                             label={'iSight No.'}
                             name={'isightNo'}
                         />
@@ -841,6 +873,9 @@ const Detail: FC<DetailProps> = (props) => {
                                 fieldProps={{
                                     onChange: (value) => {
                                         setReopenState(value)
+                                        approvalForm.setFieldsValue({
+                                            TicketReopenReasonDetail: []
+                                        })
                                     },
                                 }}
                             />
@@ -1093,16 +1128,32 @@ const Detail: FC<DetailProps> = (props) => {
 
     const handleSubmit = () => {
 
-        Promise.all([
+        if (needSaveRef.current) {
+            message.error('请先保存特殊订单！')
+            return
+        }
+
+        if ((detail.THApproveState === 1) && (decisionForm.getFieldsValue().Decision === 1)) {
+            message.error('请不要重复提交相同的审批结果！')
+            return
+        }
+
+        const promiseArr = (decisionForm.getFieldsValue().Decision === 1) ? [
+            onHoldForm.validateFields(),
+            approvalForm.validateFields(),
+            decisionForm.validateFields(),
             specialForm.validateFields(),
+        ] : [
             onHoldForm.validateFields(),
             approvalForm.validateFields(),
             decisionForm.validateFields()
-        ]).then((values) => {
+        ]
 
-            const onHoldValues = values[1]
-            const approvalValues = values[2]
-            const decisionForm = values[3]
+        Promise.all(promiseArr).then((values) => {
+
+            const onHoldValues = values[0]
+            const approvalValues = values[1]
+            const decisionForm = values[2]
 
             let submitValues: any = {
                 gcode: id,
@@ -1158,8 +1209,27 @@ const Detail: FC<DetailProps> = (props) => {
             } else {
                 //非onHold情况
                 if (approvalValues.TicketReopenReasonDetail) {
-                    approvalValues.TicketReopenReasonDetail = JSON.stringify(approvalValues.TicketReopenReasonDetail)
-                    approvalValues.GFCReopenReason = JSON.stringify(approvalValues.GFCReopenReason)
+                    approvalValues.TicketReopenReasonDetail = approvalValues.TicketReopenReasonDetail?.reduce((newVal: string, current: string)=>{
+                        let str
+                        if(!newVal){
+                            str = current
+                        }else{
+                            str = newVal + ','+current
+                        }
+                        return str
+                    },'')
+                }
+
+                if (approvalValues.GFCReopenReason) {
+                    approvalValues.GFCReopenReason = approvalValues.GFCReopenReason?.reduce((newVal: string, current: string)=>{
+                        let str
+                        if(!newVal){
+                            str = current
+                        }else{
+                            str = newVal + ','+current
+                        }
+                        return str
+                    },'')
                 }
 
                 submitValues = {
@@ -1184,7 +1254,7 @@ const Detail: FC<DetailProps> = (props) => {
                 }
             })
 
-        }).catch((err) => {
+        }).catch((err: any) => {
             message.error('存在未填必填项！')
         })
     }

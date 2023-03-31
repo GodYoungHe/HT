@@ -1,7 +1,8 @@
-import {cloneElement, FC, useEffect, useState} from "react"
+import {cloneElement, FC, useEffect, useLayoutEffect, useState} from "react"
 import {Access, useModel} from "@@/exports";
 import {useLocation} from "umi";
 import {Result} from "antd";
+import {getSession} from "@/components/Header/service";
 
 interface ChildrenContainerProps {
     children: any
@@ -24,9 +25,15 @@ const ChildrenContainer: FC<ChildrenContainerProps> = (propsMain) => {
     const [pageVisible, setPageVisible] = useState(true)
 
 
-    useEffect(() => {
+    useLayoutEffect(() => {
 
-        getUserAllInfo()
+        if(process.env.NODE_ENV === 'development'){
+            getSession().then(()=>{
+                getUserAllInfo()
+            })
+        }else {
+            getUserAllInfo()
+        }
 
     }, [])
 

@@ -35,10 +35,10 @@ const supportFilesListExternal = [
 ]
 
 const ticketReopenReason = [
-    {label: '用户确认金额错误',value: '用户确认金额错误'},
-    {label: '用户确认人数错误',value: '用户确认人数错误'},
-    {label: '小票信息错误',value: '小票信息错误'},
-    {label: '小票审批状态错误',value: '小票审批状态错误'},
+    {label: '1.用户确认金额错误',value: '用户确认金额错误'},
+    {label: '2.用户确认人数错误',value: '用户确认人数错误'},
+    {label: '3.小票信息错误',value: '小票信息错误'},
+    {label: '4.小票审批状态错误',value: '小票审批状态错误'},
 ]
 
 const ticketReopenDetail: any = {

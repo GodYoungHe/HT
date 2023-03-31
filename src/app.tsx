@@ -6,7 +6,7 @@
 import styles from './app.less'
 import type {RequestConfig} from 'umi';
 import Header from "@/components/Header";
-import {getSession, getUserInfo} from "@/components/Header/service";
+import {getUserInfo} from "@/components/Header/service";
 import ChildrenContainer from "@/components/ChildrenContainer";
 import {history} from "@@/core/history";
 
@@ -31,7 +31,7 @@ export const request: RequestConfig = {
 }
 
 export const layout = () => {
-    getSession()
+
     return {
         logo: require('/src/assets/gsk_logo.png'),
         menu: {
@@ -42,10 +42,10 @@ export const layout = () => {
 
                 let permissions = result.userInfo.ListPermissions
 
-                const newMenu = defaultMenuDat?.map((t, index) => {
+                const newMenu = defaultMenuDat?.map((t: any) => {
                     if (t.code && permissions.indexOf(t.code) !== -1) {
                         if (t.children) {
-                            const newChildren = t.children.map((tt) => {
+                            const newChildren = t.children.map((tt: any) => {
                                 if (tt.code && permissions.indexOf(tt.code) !== -1) {
                                     return tt
                                 } else {

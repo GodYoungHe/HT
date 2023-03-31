@@ -2,8 +2,8 @@
   "private": true,
   "author": "杨 贺 <he.yang@yidatec.com>",
   "scripts": {
-    "build": "max build",
-    "dev": "max dev",
+    "build": "cross-env NODE_ENV=production max build",
+    "dev": "cross-env NODE_ENV=development max dev",
     "format": "prettier --cache --write .",
     "postinstall": "max setup",
     "prepare": "husky install",
@@ -15,6 +15,7 @@
     "@ant-design/pro-components": "^2.0.1",
     "@umijs/max": "^4.0.53",
     "antd": "^5.0.0",
+    "cross-env": "^7.0.3",
     "react-resize-observer": "^1.1.1",
     "resize-observer-polyfill": "^1.5.1"
   },

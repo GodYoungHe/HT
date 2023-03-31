@@ -24,6 +24,8 @@ const ApprovalManagement: React.FC = () => {
 
     const [selectId, setSelectId] = useState("")
 
+    const [loading, setLoading] = useState(false)
+
     const form = useRef<any>(null)
 
     const actionRef = useRef<any>(null)
@@ -99,6 +101,28 @@ const ApprovalManagement: React.FC = () => {
             hideInSearch: true
         },
         {
+            title: '审批状态',
+            valueType: 'select',
+            dataIndex: 'approveState',
+            hideInTable: true,
+            valueEnum: {
+                0: {text: '上级审批完成'},
+                1: {text: 'Complete'},
+                2: {text: 'Reopen'},
+                3: {text: 'iSight'},
+            },
+        },
+        {
+            title: '审批时间',
+            valueType: 'dateTimeRange',
+            dataIndex: 'approveTime',
+            hideInTable: true,
+            fieldProps: {
+                showTime: false,
+                format: 'YYYY-MM-DD',
+            }
+        },
+        {
             title: 'Market',
             dataIndex: 'Market',
             hideInSearch: true
@@ -140,28 +164,6 @@ const ApprovalManagement: React.FC = () => {
                 marketState === 'Vx' ? TAList.vxList : null
             ),
             hideInTable: true
-        },
-        {
-            title: '审批状态',
-            valueType: 'select',
-            dataIndex: 'approveState',
-            hideInTable: true,
-            valueEnum: {
-                0: {text: '上级审批完成'},
-                1: {text: 'Complete'},
-                2: {text: 'Reopen'},
-                3: {text: 'iSight'},
-            },
-        },
-        {
-            title: '审批时间',
-            valueType: 'dateTimeRange',
-            dataIndex: 'approveTime',
-            hideInTable: true,
-            fieldProps: {
-                showTime: false,
-                format: 'YYYY-MM-DD',
-            }
         },
         {
             title: '订单时长',
@@ -342,48 +344,88 @@ const ApprovalManagement: React.FC = () => {
         <ProTable
             headerTitle={<Button
                 type={'primary'}
+                loading={loading}
                 onClick={() => {
                     const rest = form.current.getFieldsValue()
 
+                    let flag = false
+
                     if (rest.dinnerTime) {
-                        rest.dinnerTimeBegin = rest.dinnerTime[0]
-                        rest.dinnerTimeEnd = rest.dinnerTime[1]
+                        rest.dinnerTimeBegin = rest.dinnerTime[0].format('YYYY-MM-DD')
+                        rest.dinnerTimeEnd = rest.dinnerTime[1].format('YYYY-MM-DD')
+                        const diff = rest.dinnerTime[1].diff( rest.dinnerTime[0], 'month')
+
+                        if(diff <= 3){
+                            flag = true
+                        }
                         delete rest.dinnerTime
                     }
 
                     if (rest.managerApprove) {
-                        rest.managerApproveBegin = rest.managerApprove[0]
-                        rest.managerApproveEnd = rest.managerApprove[1]
+                        rest.managerApproveBegin = rest.managerApprove[0].format('YYYY-MM-DD')
+                        rest.managerApproveEnd = rest.managerApprove[1].format('YYYY-MM-DD')
+
+                        const diff2 = rest.managerApprove[1].diff( rest.managerApprove[0], 'month')
+
+                        if(diff2 <= 3){
+                            flag = true
+                        }
                         delete rest.managerApprove
                     }
 
                     if (rest.approveTime) {
-                        rest.approveTimeBegin = rest.approveTime[0]
-                        rest.approveTimeEnd = rest.approveTime[1]
+                        rest.approveTimeBegin = rest.approveTime[0].format('YYYY-MM-DD')
+                        rest.approveTimeEnd = rest.approveTime[1].format('YYYY-MM-DD')
+
+                        const diff3 = rest.approveTime[1].diff( rest.approveTime[0], 'month')
+
+                        if(diff3 <= 3){
+                            flag = true
+                        }
                         delete rest.approveTime
                     }
 
-                    // todo
-                    ExportOrderReviewReport(rest).then((res)=>{
-                        if(res){
-                            const content = res; // 文件流
-                            const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
-                            const fileName = `Gmeal订单审核${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
-                            if ('download' in document.createElement('a')) {
-                                // 非IE下载
-                                const link = document.createElement('a');
-                                link.download = fileName;
-                                link.href = URL.createObjectURL(blob);
-                                document.body.appendChild(link);
-                                link.click();
-                                URL.revokeObjectURL(link.href); // 释放URL 对象
-                                document.body.removeChild(link);
+                    const requestExport = () => {
+                        setLoading(true)
+                        ExportOrderReviewReport(rest).then((res)=>{
+                            if(res){
+                                const content = res; // 文件流
+                                const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
+                                const fileName = `Gmeal订单审核${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
+                                if ('download' in document.createElement('a')) {
+                                    // 非IE下载
+                                    const link = document.createElement('a');
+                                    link.download = fileName;
+                                    link.href = URL.createObjectURL(blob);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    URL.revokeObjectURL(link.href); // 释放URL 对象
+                                    document.body.removeChild(link);
+                                }
+                                message.success('导出文件成功!')
+                            }else {
+                                message.error('导出文件失败！')
                             }
-                            message.success('导出文件成功!')
-                        }else {
-                            message.error('导出文件失败！')
-                        }
-                    })
+                        }).finally(()=>{
+                            setLoading(false)
+                        })
+                    }
+
+                    debugger
+                    if(flag){
+                        requestExport()
+                    }else{
+                        LoadOrderReviewList({...rest, pageSize: 20, pageIndex: 1}).then((res)=>{
+                            if(res.state === 1){
+                                if(res.total >= 1000){
+                                    message.error('导出条数过多，请增加筛选条件！')
+                                }else {
+                                    requestExport()
+                                }
+                            }
+                        })
+                    }
+
                 }}
 
             >导出文件</Button>}

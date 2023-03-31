@@ -17,7 +17,7 @@ interface UploadFilesProps {
 
 const UploadFiles: FC<UploadFilesProps> = (props) => {
 
-    const {open, onCancel, id, actionRef, setSelectId} = props
+    const {open, onCancel, id, setSelectId} = props
 
     const [fileList, setFileList] = useState<any>([])
 
@@ -77,30 +77,31 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
 
     const handleSubmit = () => {
 
+        form.validateFields().then(()=>{
+            Modal.confirm({
+                title: '是否确认提交',
+                onOk: () => {
 
-        Modal.confirm({
-            title: '是否确认提交',
-            onOk: () => {
+                    const values = form.getFieldsValue()
 
-                const values = form.getFieldsValue()
-
-                SaveUploadFile({
-                    GCode: id,
-                    FileRemark: values.FileRemark,
-                    FileID: fileList?.map((item) => {
-                        return item.name
+                    SaveUploadFile({
+                        GCode: id,
+                        FileRemark: values.FileRemark,
+                        FileID: fileList?.map((item: any) => {
+                            return item.name
+                        })
+                    }).then((res) => {
+                        if (res.state === 1) {
+                            onCancel()
+                            form.resetFields()
+                            setDataSource([])
+                            setFileList([])
+                            setSelectId('')
+                            message.success('提交成功!')
+                        }
                     })
-                }).then((res) => {
-                    if (res.state === 1) {
-                        onCancel()
-                        form.resetFields()
-                        setDataSource([])
-                        setFileList([])
-                        setSelectId('')
-                        message.success('提交成功!')
-                    }
-                })
-            }
+                }
+            })
         })
     }
 
@@ -141,10 +142,15 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
                     label={'文件简述'}
                     width={'lg'}
                     name={'FileRemark'}
+                    required
+                    rules={[{required: true, message: '该项不可为空！'}]}
                 />
                 <ProFormUploadButton
                     label={'文件上传'}
                     buttonProps={{type: 'primary'}}
+                    required
+                    name={'file'}
+                    rules={[{required: true, message: '该项不可为空！'}]}
                     fieldProps={{
                         action: '/ThirdApprove/T/ThirdOrder/UploadFileImport',
                         onChange: (info) => {

@@ -19,7 +19,7 @@ export default defineConfig({
     {
       path: '/home',
       name: '首页',
-      component: './Home'
+      component: './HomePage'
     },
     {
       name: '审批管理',
