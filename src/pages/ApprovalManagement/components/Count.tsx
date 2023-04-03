@@ -54,11 +54,16 @@ const Count: FC<CountProps> = (props) => {
                 if (res.state && res.state === 1) {
                     message.success('订单计次成功！')
                     actionRef?.current?.reload()
-                    if (res.Reason) {
-                        formRef.setFieldsValue({
-                            Reason: res.Reason
-                        })
-                    }
+                    // if (res.Reason) {
+                    //     formRef.setFieldsValue({
+                    //         Reason: res.Reason
+                    //     })
+                    // }
+                    // onCancel()
+                    // setSelectId('')
+                    formRef.resetFields()
+                    setSelectId('')
+                    setDetail(null)
                     onCancel()
                 } else {
                     message.error(res.txt ? res.txt : '订单计次失败！')
@@ -82,7 +87,12 @@ const Count: FC<CountProps> = (props) => {
         width={400}
         title={'订单Issue计次'}
         footer={<div>
-            <Button onClick={onCancel}>取消</Button>
+            <Button onClick={()=>{
+                formRef.resetFields()
+                setSelectId('')
+                setDetail(null)
+                onCancel()
+            }}>取消</Button>
             {detail?.IssueState === '是' ? null :
                 <Button type={'primary'} onClick={handleSubmit} style={{marginLeft: 5}}>提交</Button>}
         </div>}
