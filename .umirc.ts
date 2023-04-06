@@ -31,7 +31,7 @@ export default defineConfig({
           redirect: '/approvalManagement/thirdPartApproval',
         },
         {
-          name: 'Gmeal订单审核',
+          name: 'HT订单审核',
           path: 'thirdPartApproval',
           component: './ApprovalManagement',
           code: '00000000-0000-2000-0001-000000000000'
@@ -53,7 +53,7 @@ export default defineConfig({
   npmClient: 'yarn',
   proxy: {
     "/ThirdApprove/": {
-      target: 'https://gmealdev.igskapp.com',
+      target: 'https://wxm-dev.igskapp.com',
       changeOrigin: true,
     },
   }

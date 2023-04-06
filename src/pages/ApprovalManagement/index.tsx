@@ -64,47 +64,107 @@ const ApprovalManagement: React.FC = () => {
         })
     }, [])
 
-    const columns: any = [
+    const tableColummns = [
         {
-            title: 'GMeal编号',
-            dataIndex: 'GCode',
-            hideInSearch: true
-        },
-        {
-            title: 'GMeal编号',
-            dataIndex: 'gcode',
-            hideInTable: true,
+            title: 'HT编号',
+            dataIndex: 'HTCode',
         },
         {
             title: '申请人姓名',
             dataIndex: 'ApplierName',
-            hideInSearch: true
         },
         {
             title: '申请人MUDID',
             dataIndex: 'ApplierMUDID',
-            hideInSearch: true
+        },
+        {
+            title: '大区区域代码',
+            dataIndex: 'RDTerritoryCode',
+        },
+        {
+            title: 'Market',
+            dataIndex: 'Market',
+        },
+        {
+            title: 'TA',
+            dataIndex: 'TA',
+        },
+        {
+            title: '会议类型',
+            dataIndex: 'MeetingType'
+        },
+        {
+            title: '会议日期',
+            dataIndex: 'MeetingDate'
+        },
+        {
+            title: '是否GPS拍照',
+            dataIndex: 'IsGPS'
+        },
+        {
+            title: '与医院/餐厅地址距离（公里）',
+            dataIndex: 'Distance'
+        },
+        {
+            title: '订单状态',
+            dataIndex: 'THApproveStatus',
+        },
+        {
+            title: '最新修改时间',
+            dataIndex: 'THApproveDate',
+        },
+        {
+            title: '操作',
+            fixed: 'right',
+            width: 200,
+            render: (item: any, record: any) => {
+                return <div>
+                    <a
+                        onClick={() => {
+                            setSelectId(record.HTCode)
+                            setDetailOpen(true)
+                        }}
+                        className={'orange-a'}
+                    >详情</a>
+                    {(record.THApproveState !== '2' && countButtonVisible && info) ? <>
+                            <Divider type={'vertical'}/>
+                            <a
+                                onClick={() => {
+                                    setSelectId(record.HTCode)
+                                    setCountOpen(true)
+                                }}
+                                className={'orange-a'}
+                            >计次</a>
+                        </>
+                        : null}
+                    {(uploadButtonVisible && info) ? <>
+                        <Divider type={'vertical'}/>
+                        <a
+                            className={'orange-a'}
+                            onClick={() => {
+                                setSelectId(record.HTCode)
+                                setUploadOpen(true)
+                            }}
+                        >上传文件</a>
+                    </> : null}
+                </div>
+            }
+        }
+    ]
+
+    const searchColumns: any = [
+        {
+            title: 'HT编号',
+            dataIndex: 'htcode',
         },
         {
             title: '申请人MUDID',
             dataIndex: 'mudid',
-            hideInTable: true,
-        },
-        {
-            title: '申请人区域代码',
-            dataIndex: 'TerritoryCode',
-            hideInSearch: true
-        },
-        {
-            title: '大区区域代码',
-            dataIndex: 'RMTerritoryCode',
-            hideInSearch: true
         },
         {
             title: '审批状态',
             valueType: 'select',
             dataIndex: 'approveState',
-            hideInTable: true,
             valueEnum: {
                 0: {text: '上级审批完成'},
                 1: {text: 'Complete'},
@@ -116,7 +176,6 @@ const ApprovalManagement: React.FC = () => {
             title: '审批时间',
             valueType: 'dateTimeRange',
             dataIndex: 'approveTime',
-            hideInTable: true,
             fieldProps: {
                 showTime: false,
                 format: 'YYYY-MM-DD',
@@ -124,14 +183,8 @@ const ApprovalManagement: React.FC = () => {
         },
         {
             title: 'Market',
-            dataIndex: 'Market',
-            hideInSearch: true
-        },
-        {
-            title: 'Market',
             dataIndex: 'market',
             valueType: 'select',
-            hideInTable: true,
             fieldProps: {
                 onChange: (value: string) => {
                     setMarketState(value)
@@ -153,107 +206,46 @@ const ApprovalManagement: React.FC = () => {
         },
         {
             title: 'TA',
-            dataIndex: 'TA',
-            hideInSearch: true
-        },
-        {
-            title: 'TA',
             dataIndex: 'ta',
             valueType: 'select',
             valueEnum: marketState === 'Rx' ? TAList.rxList : (
                 marketState === 'Vx' ? TAList.vxList : null
             ),
-            hideInTable: true
         },
         {
             title: '订单时长',
             dataIndex: 'duration',
-            hideInTable: true,
         },
         {
-            title: '用餐时间',
-            valueType: 'dateTimeRange',
-            dataIndex: 'dinnerTime',
-            hideInTable: true,
-            fieldProps: {
-                showTime: false,
-                format: 'YYYY-MM-DD',
-            }
-        },
-        {
-            title: '上级经理审批时间',
-            valueType: 'dateTimeRange',
-            dataIndex: 'managerApprove',
-            hideInTable: true,
-            fieldProps: {
-                showTime: false,
-                format: 'YYYY-MM-DD',
-            }
-        },
-        {
-            title: '用餐类型',
-            dataIndex: 'MealType',
-            hideInSearch: true
-        },
-        {
-            title: '用餐类型',
-            dataIndex: 'mealType',
-            hideInTable: true,
+            title: '会议类型',
+            dataIndex: 'meetingType',
             valueType: 'select',
             valueEnum: {
-                'Internal': {text: 'Internal Meals'},
-                'External': {text: 'External Meals'}
+                0: {text: '院内会'},
+                1: {text: '院外会'}
             }
         },
         {
-            title: '餐厅编码',
-            dataIndex: 'restaurantId',
-            hideInTable: true,
-        },
-        {
-            title: '是否超人均300',
+            title: '是否GPS拍照',
+            dataIndex: 'isGPS',
             valueType: 'select',
-            dataIndex: 'isOverAverage',
-            hideInTable: true,
             valueEnum: {
-                1: '是',
-                0: '否'
+                1: {text: '是'},
+                0: {text: '否'}
             }
         },
         {
-            title: '是否超预算金额',
+            title: '与医院/餐厅地址距离（公里）',
+            dataIndex: 'gpsDistance',
             valueType: 'select',
-            dataIndex: 'isOverBudget',
-            hideInTable: true,
             valueEnum: {
-                1: '是',
-                0: '否'
-            }
-        },
-        {
-            title: '是否超季/月上限',
-            valueType: 'select',
-            dataIndex: 'isOverMonthQuarter',
-            hideInTable: true,
-            valueEnum: {
-                1: '是',
-                0: '否'
-            }
-        },
-        {
-            title: '用餐包括上级经理',
-            valueType: 'select',
-            dataIndex: 'isInviteManager',
-            hideInTable: true,
-            valueEnum: {
-                1: '是',
-                0: '否'
+                1: {text: '>1km'},
+                2: {text: '>2km'}
             }
         },
         {
             title: '是否计次',
             valueType: 'select',
-            hideInTable: true,
             dataIndex: 'issue',
             valueEnum: {
                 1: '是',
@@ -263,82 +255,16 @@ const ApprovalManagement: React.FC = () => {
         {
             title: 'onHold原因',
             valueType: 'select',
-            hideInTable: true,
             dataIndex: 'onHoldReason',
             valueEnum: {
                 1: '与员工沟通',
                 2: '与合规沟通'
             }
         },
-        {
-            title: '支持文件是否Reopen',
-            valueType: 'select',
-            dataIndex: 'isReOpen',
-            hideInTable: true,
-            valueEnum: {
-                1: '是',
-                0: '否'
-            }
-        },
-        {
-            title: '用餐日期',
-            dataIndex: 'DinnerDate',
-            hideInSearch: true
-        },
-        {
-            title: '用餐时间',
-            dataIndex: 'DinnerTime',
-            hideInSearch: true
-        },
-        {
-            title: '订单状态',
-            dataIndex: 'THApproveStatus',
-            hideInSearch: true
-        },
-        {
-            title: '最新修改时间',
-            dataIndex: 'THApproveDate',
-            hideInSearch: true
-        },
-        {
-            title: '操作',
-            hideInSearch: true,
-            fixed: 'right',
-            width: 200,
-            render: (item: any, record: any) => {
-                return <div>
-                    <a
-                        onClick={() => {
-                            setSelectId(record.GCode)
-                            setDetailOpen(true)
-                        }}
-                        className={'orange-a'}
-                    >详情</a>
-                    {(record.THApproveState !== '2' && countButtonVisible && info) ? <>
-                            <Divider type={'vertical'}/>
-                            <a
-                                onClick={() => {
-                                    setSelectId(record.GCode)
-                                    setCountOpen(true)
-                                }}
-                                className={'orange-a'}
-                            >计次</a>
-                        </>
-                        : null}
-                    {(uploadButtonVisible && info) ? <>
-                        <Divider type={'vertical'}/>
-                        <a
-                            className={'orange-a'}
-                            onClick={() => {
-                                setSelectId(record.GCode)
-                                setUploadOpen(true)
-                            }}
-                        >上传文件</a>
-                    </> : null}
-                </div>
-            }
-        }
     ]
+
+    const columns = [...tableColummns.map((t: any)=>{return {...t, hideInSearch: true}})
+        ,...searchColumns.map((t: any)=>{return {...t, hideInTable: true}})]
 
     return <PageContainer breadcrumb={{}}>
         <ProTable
@@ -350,28 +276,28 @@ const ApprovalManagement: React.FC = () => {
 
                     let flag = false
 
-                    if (rest.dinnerTime) {
-                        rest.dinnerTimeBegin = rest.dinnerTime[0].format('YYYY-MM-DD')
-                        rest.dinnerTimeEnd = rest.dinnerTime[1].format('YYYY-MM-DD')
-                        const diff = rest.dinnerTime[1].diff( rest.dinnerTime[0], 'month')
-
-                        if(diff <= 3){
-                            flag = true
-                        }
-                        delete rest.dinnerTime
-                    }
-
-                    if (rest.managerApprove) {
-                        rest.managerApproveBegin = rest.managerApprove[0].format('YYYY-MM-DD')
-                        rest.managerApproveEnd = rest.managerApprove[1].format('YYYY-MM-DD')
-
-                        const diff2 = rest.managerApprove[1].diff( rest.managerApprove[0], 'month')
-
-                        if(diff2 <= 3){
-                            flag = true
-                        }
-                        delete rest.managerApprove
-                    }
+                    // if (rest.dinnerTime) {
+                    //     rest.dinnerTimeBegin = rest.dinnerTime[0].format('YYYY-MM-DD')
+                    //     rest.dinnerTimeEnd = rest.dinnerTime[1].format('YYYY-MM-DD')
+                    //     const diff = rest.dinnerTime[1].diff( rest.dinnerTime[0], 'month')
+                    //
+                    //     if(diff <= 3){
+                    //         flag = true
+                    //     }
+                    //     delete rest.dinnerTime
+                    // }
+                    //
+                    // if (rest.managerApprove) {
+                    //     rest.managerApproveBegin = rest.managerApprove[0].format('YYYY-MM-DD')
+                    //     rest.managerApproveEnd = rest.managerApprove[1].format('YYYY-MM-DD')
+                    //
+                    //     const diff2 = rest.managerApprove[1].diff( rest.managerApprove[0], 'month')
+                    //
+                    //     if(diff2 <= 3){
+                    //         flag = true
+                    //     }
+                    //     delete rest.managerApprove
+                    // }
 
                     if (rest.approveTime) {
                         rest.approveTimeBegin = rest.approveTime[0].format('YYYY-MM-DD')
@@ -391,7 +317,7 @@ const ApprovalManagement: React.FC = () => {
                             if(res){
                                 const content = res; // 文件流
                                 const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
-                                const fileName = `Gmeal订单审核${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
+                                const fileName = `HT订单审核${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
                                 if ('download' in document.createElement('a')) {
                                     // 非IE下载
                                     const link = document.createElement('a');
@@ -411,7 +337,6 @@ const ApprovalManagement: React.FC = () => {
                         })
                     }
 
-                    debugger
                     if(flag){
                         requestExport()
                     }else{

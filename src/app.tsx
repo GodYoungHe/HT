@@ -11,7 +11,7 @@ import ChildrenContainer from "@/components/ChildrenContainer";
 import {history} from "@@/core/history";
 
 export async function getInitialState(): Promise<{ name: string }> {
-    return {name: 'Gmeal'};
+    return {name: 'HT'};
 }
 
 export const request: RequestConfig = {

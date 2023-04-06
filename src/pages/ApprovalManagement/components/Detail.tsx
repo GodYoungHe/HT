@@ -52,6 +52,8 @@ const Detail: FC<DetailProps> = (props) => {
 
     const [reopenState, setReopenState] = useState<string>('')
 
+    const [iSightDisable, setISightDisable] = useState(false)
+
     // 特殊订单form
     const [specialForm] = ProForm.useForm()
 
@@ -86,6 +88,7 @@ const Detail: FC<DetailProps> = (props) => {
         setFinalRes('0')
         setReopenState('')
         setDisable(false)
+        setISightDisable(false)
         specialForm.resetFields()
         onHoldForm.resetFields()
         approvalForm.resetFields()
@@ -127,6 +130,10 @@ const Detail: FC<DetailProps> = (props) => {
                     reasonForApplier: values.ReasonForApplier,
                     reasonForPMO: values.ReasonForPMO
                 })
+            }
+
+            if (values.OnHoldReason === 2) {
+                setISightDisable(true)
             }
 
             setDisable(false)
@@ -186,7 +193,7 @@ const Detail: FC<DetailProps> = (props) => {
             dataIndex: 'MealType'
         },
         {
-            title: 'Gmeal编号',
+            title: 'HT编号',
             dataIndex: 'GCode'
         },
         {
@@ -306,7 +313,7 @@ const Detail: FC<DetailProps> = (props) => {
             title: '用户确认用餐金额 ',
             dataIndex: 'ActualAmount',
             render: (item: any) => {
-                if(item){
+                if (item) {
                     return parseFloat(item).toFixed(2)
                 }
             }
@@ -331,7 +338,7 @@ const Detail: FC<DetailProps> = (props) => {
             title: '预算金额 ',
             dataIndex: 'MealBudget',
             render: (item: any) => {
-                if(item){
+                if (item) {
                     return parseFloat(item).toFixed(2)
                 }
             }
@@ -587,49 +594,6 @@ const Detail: FC<DetailProps> = (props) => {
 
     }, [detail?.DinersList])
 
-    const personColumns: any = [
-        {
-            title: '用餐人类别',
-            dataIndex: 'DinerType',
-            filters: typeFilter,
-            onFilter: (value: string, record: any) => record.DinerType.indexOf(value) === 0,
-        },
-        {
-            title: '用餐人姓名',
-            dataIndex: 'DinerName',
-            filters: personFilter,
-            onFilter: (value: string, record: any) => record.DinerName.indexOf(value) === 0,
-        },
-        {
-            title: '用餐人ID/MUDID',
-            dataIndex: 'DinerId',
-            filters: mudidFilter,
-            onFilter: (value: string, record: any) => record.DinerId.indexOf(value) === 0,
-        },
-        {
-            title: '用餐人科室/部门',
-            dataIndex: 'DeptName'
-        },
-        {
-            title: '用餐人行政职务/职位',
-            dataIndex: 'Position'
-        },
-        {
-            title: '用餐人机构',
-            dataIndex: 'Attribute'
-        },
-        {
-            title: '用餐人所在医院',
-            dataIndex: 'HospitalName'
-        },
-        {
-            title: 'IF GO',
-            dataIndex: 'IsGO',
-            filters: goFilter,
-            onFilter: (value: string, record: any) => record.IsGO.indexOf(value) === 0,
-        }
-    ]
-
     const approvalColumns: any = [
         {
             title: '操作人',
@@ -687,9 +651,10 @@ const Detail: FC<DetailProps> = (props) => {
             <Row>
                 <Col span={8}>
                     <ProFormSelect
-                        label={'onHold原因'}
+                        label={'OnHold原因'}
                         name={'onHoldReason'}
                         required
+                        disabled={iSightDisable}
                         rules={[{required: true, message: '该项必填！'}]}
                         options={[
                             {
@@ -703,6 +668,11 @@ const Detail: FC<DetailProps> = (props) => {
                         ]}
                         fieldProps={{
                             onChange: (value) => {
+                                onHoldForm.setFieldsValue({
+                                    lastResult: '',
+                                    reasonForPMO: ''
+                                })
+                                setFinalRes('0')
                                 setOnHoldReason(value)
                             }
                         }}
@@ -712,8 +682,9 @@ const Detail: FC<DetailProps> = (props) => {
             {(onHoldReason === '1' || onHoldReason === '2') ? <Row>
                 <Col span={8}>
                     <ProFormTextArea
-                        label={'与用户沟通原因详述'}
+                        label={'与用户沟通备注'}
                         name={'reasonForApplier'}
+                        disabled={iSightDisable}
                         required
                         rules={[{required: true, message: '该项必填！'}]}
                     />
@@ -723,7 +694,7 @@ const Detail: FC<DetailProps> = (props) => {
                 <Row>
                     <Col span={8}>
                         <ProFormTextArea
-                            label={'与合规沟通原因详述'}
+                            label={'与合规沟通备注'}
                             name={'reasonForPMO'}
                             rules={[{required: true, message: '该项必填！'}]}
                         />
@@ -779,8 +750,8 @@ const Detail: FC<DetailProps> = (props) => {
                             options={[
                                 {label: '通过', value: 1},
                                 {label: 'ReOpen支持文件', value: 2},
-                                {label: 'ReOpen小票', value: 3},
-                                {label: 'ReOpen支持文件和小票', value: 4},
+                                // {label: 'ReOpen小票', value: 3},
+                                // {label: 'ReOpen支持文件和小票', value: 4},
                             ]}
                             fieldProps={{
                                 onChange: (e) => {
@@ -926,19 +897,19 @@ const Detail: FC<DetailProps> = (props) => {
                     options={{reload: false}}
                 />
             </Card>
-            <Card className={styles.cardStyle} style={{marginTop: 20}}>
-                <ProTable
-                    columns={personColumns}
-                    search={false}
-                    headerTitle={'用餐人'}
-                    scroll={{
-                        x: 'max-content'
-                    }}
-                    pagination={false}
-                    dataSource={detail?.DinersList || []}
-                    options={{reload: false}}
-                />
-            </Card>
+            {/*<Card className={styles.cardStyle} style={{marginTop: 20}}>*/}
+            {/*    <ProTable*/}
+            {/*        columns={personColumns}*/}
+            {/*        search={false}*/}
+            {/*        headerTitle={'用餐人'}*/}
+            {/*        scroll={{*/}
+            {/*            x: 'max-content'*/}
+            {/*        }}*/}
+            {/*        pagination={false}*/}
+            {/*        dataSource={detail?.DinersList || []}*/}
+            {/*        options={{reload: false}}*/}
+            {/*    />*/}
+            {/*</Card>*/}
             <Card className={styles.cardStyle} style={{marginTop: 20}}>
                 <ProTable
                     columns={approvalColumns}
@@ -1031,9 +1002,13 @@ const Detail: FC<DetailProps> = (props) => {
                     <Row>
                         <Col span={8}>
                             <ProForm.Item required label={'OnHold'}>
-                                <Select value={onHold} onSelect={(value) => {
-                                    setOnHold(value)
-                                }}>
+                                <Select
+                                    value={onHold}
+                                    disabled={iSightDisable}
+                                    onSelect={(value) => {
+                                        setOnHold(value)
+                                    }}
+                                >
                                     <Option value={0}>否</Option>
                                     <Option value={1}>是</Option>
                                 </Select>
@@ -1051,7 +1026,7 @@ const Detail: FC<DetailProps> = (props) => {
     const pictureNode = (
         <ProCard split={'vertical'} style={{height: '80vh'}}>
             <ProCard colSpan={8} style={{overflow: 'hidden', height: '100%', overflowY: 'scroll'}}>
-                <div style={{fontSize: 16, fontWeight: 600}}>小票照片</div>
+                <div style={{fontSize: 16, fontWeight: 600}}>签到表照片</div>
                 <Image.PreviewGroup>
                     {
                         detail?.ReceiptList?.length ? detail?.ReceiptList?.map((item: any, index: number) => {
@@ -1128,7 +1103,7 @@ const Detail: FC<DetailProps> = (props) => {
 
     const handleSubmit = () => {
 
-        if (needSaveRef.current) {
+        if (needSaveRef.current && (decisionForm.getFieldsValue().Decision === 1|| onHoldForm.getFieldsValue().lastResult === '1')) {
             message.error('请先保存特殊订单！')
             return
         }
@@ -1209,27 +1184,27 @@ const Detail: FC<DetailProps> = (props) => {
             } else {
                 //非onHold情况
                 if (approvalValues.TicketReopenReasonDetail) {
-                    approvalValues.TicketReopenReasonDetail = approvalValues.TicketReopenReasonDetail?.reduce((newVal: string, current: string)=>{
+                    approvalValues.TicketReopenReasonDetail = approvalValues.TicketReopenReasonDetail?.reduce((newVal: string, current: string) => {
                         let str
-                        if(!newVal){
+                        if (!newVal) {
                             str = current
-                        }else{
-                            str = newVal + ','+current
+                        } else {
+                            str = newVal + ',' + current
                         }
                         return str
-                    },'')
+                    }, '')
                 }
 
                 if (approvalValues.GFCReopenReason) {
-                    approvalValues.GFCReopenReason = approvalValues.GFCReopenReason?.reduce((newVal: string, current: string)=>{
+                    approvalValues.GFCReopenReason = approvalValues.GFCReopenReason?.reduce((newVal: string, current: string) => {
                         let str
-                        if(!newVal){
+                        if (!newVal) {
                             str = current
-                        }else{
-                            str = newVal + ','+current
+                        } else {
+                            str = newVal + ',' + current
                         }
                         return str
-                    },'')
+                    }, '')
                 }
 
                 submitValues = {
@@ -1241,6 +1216,7 @@ const Detail: FC<DetailProps> = (props) => {
 
             submitValues = stringifyNumbers(submitValues)
 
+            setLoading(true)
             ApprovalDecision({
                 ...submitValues
             }).then((res) => {
@@ -1256,6 +1232,8 @@ const Detail: FC<DetailProps> = (props) => {
 
         }).catch((err: any) => {
             message.error('存在未填必填项！')
+        }).finally(()=>{
+            setLoading(false)
         })
     }
 

@@ -121,7 +121,7 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
     >
         <div style={{color: "red"}}>
             <span style={{marginRight: 5}}>
-                Gmeal编号:
+                HT编号:
             </span>
             <span>{id || ''}</span>
         </div>

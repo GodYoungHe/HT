@@ -1,6 +1,6 @@
 import {PageContainer, ProTable} from "@ant-design/pro-components";
 import React, {useEffect, useRef, useState} from "react";
-import {Button, message} from "antd";
+import {Button, Divider, message} from "antd";
 import {LoadIssueData, LoadIssueReport} from "@/pages/IssueRecord/service";
 import dayjs from "dayjs";
 
@@ -21,7 +21,7 @@ const IssueRecord: React.FC = () => {
             dataIndex: 'ApplierMUDID',
         },
         {
-            title: 'Gmeal编号',
+            title: 'HT编号',
             hideInSearch: true,
             dataIndex: 'GCode',
             width: 400,
@@ -51,6 +51,22 @@ const IssueRecord: React.FC = () => {
             title: '记录操作人MUDID',
             dataIndex: 'OperatorMUDID',
             hideInSearch: true
+        },
+        {
+            title: '操作',
+            width: 140,
+            fixed: 'right',
+            render: () => {
+                return <div>
+                    <a className={'orange-a'}>
+                        确认计次
+                    </a>
+                    <Divider type={'vertical'}/>
+                    <a className={'orange-a'}>
+                        申诉
+                    </a>
+                </div>
+            }
         }
     ]
 
@@ -65,8 +81,8 @@ const IssueRecord: React.FC = () => {
             delete params.CreateDate
         }
 
-        LoadIssueReport(params).then((res)=>{
-            if(res){
+        LoadIssueReport(params).then((res) => {
+            if (res) {
                 const content = res; // 文件流
                 const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
                 const fileName = `issue${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
@@ -82,7 +98,7 @@ const IssueRecord: React.FC = () => {
                 }
                 message.success('导出文件成功!')
                 setLoading(false)
-            }else {
+            } else {
                 message.error('导出文件失败！')
                 setLoading(false)
             }
@@ -110,6 +126,24 @@ const IssueRecord: React.FC = () => {
             search={{
                 layout: 'vertical'
             }}
+            // dataSource={[
+            //     {
+            //         ApplierName: '夏小朵',
+            //         ApplierMUDID: 'YD_08',
+            //         GCode: 'HT-TEST0001(XXXXXX)',
+            //         CreateDate: '2023-04-03',
+            //         OperatorName: '夏小朵',
+            //         OperatorMUDID: 'YD_08'
+            //     },
+            //     {
+            //         ApplierName: '夏小朵',
+            //         ApplierMUDID: 'YD_08',
+            //         GCode: 'HT-TEST0001(XXXXXX)',
+            //         CreateDate: '2023-04-03',
+            //         OperatorName: '夏小朵',
+            //         OperatorMUDID: 'YD_08'
+            //     }
+            // ]}
             request={async ({pageSize, current, ...rest}) => {
 
                 if (rest.CreateDate) {
