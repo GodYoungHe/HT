@@ -700,29 +700,67 @@ const Detail: FC<DetailProps> = (props) => {
                         />
                     </Col>
                 </Row>
-                <Row>
+                {detail?.ReasonForPMO ? <Row>
                     <Col span={8}>
-                        <ProFormRadio.Group
+                        <ProForm.Item
                             label={'最终结果'}
                             name={'lastResult'}
-                            options={[
-                                {
-                                    label: 'iSight',
-                                    value: '3'
-                                },
-                                {
-                                    label: '审批通过',
-                                    value: '1'
-                                }
-                            ]}
-                            fieldProps={{
-                                onChange: (e) => {
-                                    setFinalRes(e.target.value)
-                                }
-                            }}
-                        />
+                        >
+                            <Radio.Group
+                                value={finalRes}
+                                // onChange={(e) => {
+                                //     setFinalRes(e.target.value)
+                                // }}
+                            >
+                                <Radio
+                                    value={'3'}
+                                    onClick={(e: any) => {
+                                        if (e.target?.value === finalRes) {
+                                            setFinalRes('0')
+                                            onHoldForm.setFieldsValue({
+                                                lastResult: null
+                                            })
+                                        } else {
+                                            setFinalRes(e.target.value)
+                                        }
+                                    }}
+                                >iSight</Radio>
+                                <Radio
+                                    value={'1'}
+                                    onClick={(e: any) => {
+                                        if (e.target?.value === finalRes) {
+                                            setFinalRes('0')
+                                            onHoldForm.setFieldsValue({
+                                                lastResult: null
+                                            })
+                                        } else {
+                                            setFinalRes(e.target.value)
+                                        }
+                                    }}
+                                >审批通过</Radio>
+                            </Radio.Group>
+                        </ProForm.Item>
+                        {/*<ProFormRadio.Group*/}
+                        {/*    label={'最终结果'}*/}
+                        {/*    name={'lastResult'}*/}
+                        {/*    options={[*/}
+                        {/*        {*/}
+                        {/*            label: 'iSight',*/}
+                        {/*            value: '3'*/}
+                        {/*        },*/}
+                        {/*        {*/}
+                        {/*            label: '审批通过',*/}
+                        {/*            value: '1'*/}
+                        {/*        }*/}
+                        {/*    ]}*/}
+                        {/*    fieldProps={{*/}
+                        {/*        onChange: (e) => {*/}
+                        {/*            setFinalRes(e.target.value)*/}
+                        {/*        }*/}
+                        {/*    }}*/}
+                        {/*/>*/}
                     </Col>
-                </Row>
+                </Row> : null}
                 {finalRes === '3' ? <Row>
                     <Col span={8}>
                         <ProFormText
@@ -1103,7 +1141,7 @@ const Detail: FC<DetailProps> = (props) => {
 
     const handleSubmit = () => {
 
-        if (needSaveRef.current && (decisionForm.getFieldsValue().Decision === 1|| onHoldForm.getFieldsValue().lastResult === '1')) {
+        if (needSaveRef.current && (decisionForm.getFieldsValue().Decision === 1 || onHoldForm.getFieldsValue().lastResult === '1')) {
             message.error('请先保存特殊订单！')
             return
         }
@@ -1232,7 +1270,7 @@ const Detail: FC<DetailProps> = (props) => {
 
         }).catch((err: any) => {
             message.error('存在未填必填项！')
-        }).finally(()=>{
+        }).finally(() => {
             setLoading(false)
         })
     }

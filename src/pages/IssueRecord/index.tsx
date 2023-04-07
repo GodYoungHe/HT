@@ -55,6 +55,7 @@ const IssueRecord: React.FC = () => {
         {
             title: '操作',
             width: 140,
+            valueType: 'option',
             fixed: 'right',
             render: () => {
                 return <div>
