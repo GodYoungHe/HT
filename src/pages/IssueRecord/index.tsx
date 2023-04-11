@@ -1,12 +1,14 @@
 import {PageContainer, ProTable} from "@ant-design/pro-components";
 import React, {useEffect, useRef, useState} from "react";
-import {Button, Divider, message} from "antd";
-import {LoadIssueData, LoadIssueReport} from "@/pages/IssueRecord/service";
+import {Button, Divider, message, Modal} from "antd";
+import {IssueAppeal, IssueConfirm, LoadIssueData, LoadIssueReport} from "@/pages/IssueRecord/service";
 import dayjs from "dayjs";
 
 const IssueRecord: React.FC = () => {
 
     const ref = useRef<any>(null)
+
+    const actionRef = useRef<any>(null)
 
     const [loading, setLoading] = useState(false)
 
@@ -23,7 +25,7 @@ const IssueRecord: React.FC = () => {
         {
             title: 'HT编号',
             hideInSearch: true,
-            dataIndex: 'GCode',
+            dataIndex: 'HTCode',
             width: 400,
             ellipsis: true
         },
@@ -57,15 +59,63 @@ const IssueRecord: React.FC = () => {
             width: 140,
             valueType: 'option',
             fixed: 'right',
-            render: () => {
+            render: (item: any, record: any) => {
+
+                const code = record.HTCode.split('(')[0]
+
                 return <div>
-                    <a className={'orange-a'}>
+                    {record.IsIssue === '0'?<a
+                        className={'orange-a'}
+                        onClick={() => {
+                            Modal.confirm({
+                                title: '是否确认计次?',
+                                onOk: () => {
+                                    IssueConfirm({
+                                        htCode: code
+                                    }).then((res) => {
+                                        if(res.state === 1){
+                                            actionRef.current.reload()
+                                            message.success(res.txt)
+                                        }else{
+                                            if(res.txt){
+                                                message.error(res.txt)
+                                            }else {
+                                                message.error('确认计次失败！')
+                                            }
+                                        }
+                                    })
+                                }
+                            })
+                        }}
+                    >
                         确认计次
-                    </a>
-                    <Divider type={'vertical'}/>
-                    <a className={'orange-a'}>
+                    </a>: null}
+                    {record.IsIssue === '1'?<a
+                        className={'orange-a'}
+                        onClick={() => {
+                            Modal.confirm({
+                                title: '是否确认申诉?',
+                                onOk: () => {
+                                    IssueAppeal({
+                                        htCode: code
+                                    }).then((res) => {
+                                        if(res.state === 1){
+                                            actionRef.current.reload()
+                                            message.success(res.txt)
+                                        }else{
+                                            if(res.txt){
+                                                message.error(res.txt)
+                                            }else {
+                                                message.error('确认申诉失败！')
+                                            }
+                                        }
+                                    })
+                                }
+                            })
+                        }}
+                    >
                         申诉
-                    </a>
+                    </a>: null}
                 </div>
             }
         }
@@ -115,6 +165,7 @@ const IssueRecord: React.FC = () => {
         <ProTable
             columns={columns}
             formRef={ref}
+            actionRef={actionRef}
             headerTitle={
                 <Button
                     type={'primary'}
@@ -127,24 +178,6 @@ const IssueRecord: React.FC = () => {
             search={{
                 layout: 'vertical'
             }}
-            // dataSource={[
-            //     {
-            //         ApplierName: '夏小朵',
-            //         ApplierMUDID: 'YD_08',
-            //         GCode: 'HT-TEST0001(XXXXXX)',
-            //         CreateDate: '2023-04-03',
-            //         OperatorName: '夏小朵',
-            //         OperatorMUDID: 'YD_08'
-            //     },
-            //     {
-            //         ApplierName: '夏小朵',
-            //         ApplierMUDID: 'YD_08',
-            //         GCode: 'HT-TEST0001(XXXXXX)',
-            //         CreateDate: '2023-04-03',
-            //         OperatorName: '夏小朵',
-            //         OperatorMUDID: 'YD_08'
-            //     }
-            // ]}
             request={async ({pageSize, current, ...rest}) => {
 
                 if (rest.CreateDate) {

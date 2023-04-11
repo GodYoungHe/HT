@@ -26,10 +26,10 @@ const Count: FC<CountProps> = (props) => {
         setLoading(true)
         if (id && open) {
             LoadIssueOrder({
-                Gcode: id
+                htCode: id
             }).then((res) => {
                 if (res.state && res.state === 1) {
-                    if (res.isIssue) {
+                    if (res.IsTimeIssue) {
                         formRef.setFieldsValue({
                             Reason: res.data
                         })
@@ -48,7 +48,7 @@ const Count: FC<CountProps> = (props) => {
     const handleSubmit = () => {
         formRef.validateFields().then((values) => {
             IssueOrder({
-                GCode: id,
+                htCode: id,
                 Reason: values.Reason
             }).then((res) => {
                 if (res.state && res.state === 1) {
@@ -118,7 +118,7 @@ const Count: FC<CountProps> = (props) => {
                     width={'md'}
                     name={'Reason'}
                     required={true}
-                    readonly={detail?.isIssue === 1}
+                    readonly={detail?.IsTimeIssue === 1}
                     rules={[{required: true, message: '该项为必填项！'}]}
                     options={[
                         {

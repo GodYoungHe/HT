@@ -28,7 +28,7 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
     useEffect(() => {
         if (id && open) {
             UploadFileList({
-                GCode: id
+                htCode: id
             }).then((res) => {
                 if (res.state) {
                     setDataSource(res.data)
@@ -85,7 +85,7 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
                     const values = form.getFieldsValue()
 
                     SaveUploadFile({
-                        GCode: id,
+                        htCode: id,
                         FileRemark: values.FileRemark,
                         FileID: fileList?.map((item: any) => {
                             return item.name

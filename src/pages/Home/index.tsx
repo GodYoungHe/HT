@@ -1,5 +1,5 @@
 import {PageContainer} from '@ant-design/pro-components';
-import {Button, Col, Row} from "antd";
+import {Col, Row} from "antd";
 import {
     CheckCircleFilled,
     CheckSquareFilled,
@@ -12,7 +12,6 @@ import {
 import ShowCard from "@/pages/Home/components/ShowCard";
 import React, {useEffect, useState} from "react";
 import {LoadSummary} from "@/pages/Home/service";
-import { history } from 'umi'
 
 const HomePage: React.FC = () => {
 

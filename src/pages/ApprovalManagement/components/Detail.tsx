@@ -149,13 +149,13 @@ const Detail: FC<DetailProps> = (props) => {
 
         if (id && open) {
             LoadOrderDetailByGCode({
-                gcode: id
+                htcode: id
             }).then((res) => {
                 if (res.state && res.state === 1) {
                     setInitState(res.data)
-                    if (res.data.IsSpecialOrder === 3) {
+                    if (res.data.IsSpecialOrder === 4) {
                         // 未使用GPS
-                        setSpecial(2)
+                        setSpecial(4)
                         specialForm.setFieldsValue({
                             specialReason: res.data.GFCConfirmWithoutGPSReason
                         })
@@ -189,12 +189,20 @@ const Detail: FC<DetailProps> = (props) => {
 
     const orderDetailColumns = [
         {
-            title: '用餐类型',
-            dataIndex: 'MealType'
+            title: '会议类型',
+            dataIndex: 'MeetingTypeValue'
         },
         {
             title: 'HT编号',
-            dataIndex: 'GCode'
+            dataIndex: 'HTCode'
+        },
+        {
+            title: '会议日期',
+            dataIndex: 'MeetingDate'
+        },
+        {
+            title: '会议时间',
+            dataIndex: 'MeetingTime'
         },
         {
             title: '申请人姓名',
@@ -205,40 +213,115 @@ const Detail: FC<DetailProps> = (props) => {
             dataIndex: 'ApplierMUDID'
         },
         {
-            title: '申请人手机号码',
-            dataIndex: 'Phone'
+            title: '申请人职位',
+            dataIndex: 'Position'
         },
         {
-            title: '大区区域代码',
-            dataIndex: 'RMTerritoryCode'
+            title: '申请人手机号码',
+            dataIndex: 'ApplierMobile'
         },
         {
             title: 'Market',
             dataIndex: 'Market'
         },
         {
+            title: 'Meeting ID',
+            dataIndex: 'MeetingID'
+        },
+        {
             title: 'TA',
             dataIndex: 'TA'
         },
         {
-            title: '用餐日期',
-            dataIndex: 'PreDinnerDate'
-        },
-        {
-            title: '用餐时间',
-            dataIndex: 'PreDinnerTime'
+            title: '省份',
+            dataIndex: 'Province'
         },
         {
             title: '城市',
             dataIndex: 'City'
         },
         {
-            title: '餐厅编码',
-            dataIndex: 'RestaurantID'
+            title: '医院编码',
+            dataIndex: 'HospitalCode'
+        },
+        {
+            title: '医院名称',
+            dataIndex: 'HospitalName'
+        },
+        {
+            title: '医院地址',
+            dataIndex: 'HospitalAddress'
+        },
+        {
+            title: '会议名称',
+            dataIndex: 'MeetingName'
+        },
+        {
+            title: '参会人数',
+            dataIndex: 'AttendCount'
+        },
+        {
+            title: '大区区域代码',
+            dataIndex: 'CostCenter'
+        },
+        {
+            title: '供应商',
+            dataIndex: 'Supplier'
+        },
+        {
+            title: '订单号',
+            dataIndex: 'EnterpriseOrderId'
+        },
+        {
+            title: '送餐日期',
+            dataIndex: 'DeliverTime'
+        },
+        {
+            title: '用餐人数',
+            dataIndex: 'DinersCount'
+        },
+        {
+            title: '预订金额',
+            dataIndex: 'TotalPrice',
+            render: (item: any) => {
+                if (item) {
+                    return parseFloat(item).toFixed(2)
+                }
+            }
+        },
+        {
+            title: '实际金额',
+            dataIndex: 'ActualAmount',
+            render: (item: any) => {
+                if (item) {
+                    return parseFloat(item).toFixed(2)
+                }
+            }
+        },
+        {
+            title: '实际用餐人数',
+            dataIndex: 'RealCount'
+        },
+        {
+            title: '确认收餐日期',
+            dataIndex: 'ReceiveDate'
+        },
+        {
+            title: '用户确认金额',
+            dataIndex: 'RealPrice',
+            render: (item: any) => {
+                if (item) {
+                    return parseFloat(item).toFixed(2)
+                }
+            }
         },
         {
             title: '餐厅名称',
             dataIndex: 'RestaurantName'
+        },
+        {
+            title: '是否上传文件',
+            dataIndex: 'IsOrderUpload'
         },
         {
             title: '是否GPS拍照',
@@ -255,300 +338,229 @@ const Detail: FC<DetailProps> = (props) => {
         {
             title: '三方确认未使用GPS拍照原因',
             dataIndex: 'GFCConfirmWithoutGPSReason'
-
         },
         {
-            title: '拍照日期',
-            dataIndex: 'FilmingDate'
-        },
-        {
-            title: '拍照时间 ',
+            title: '照片拍摄时间',
             dataIndex: 'FilmingTime'
         },
         {
-            title: '拍照定位差异 ',
+            title: '拍摄地名称',
+            dataIndex: 'Location'
+        },
+        {
+            title: '拍摄地地址',
+            dataIndex: 'LocationAddress'
+        },
+        {
+            title: '与医院/餐厅地址距离（公里）',
             dataIndex: 'Distance'
         },
         {
-            title: 'GPS拍照距离超过1公里原因 ',
+            title: 'GPS拍照超过容错距离原因',
             dataIndex: 'OverDistanceReason'
         },
         {
-            title: 'GPS拍照距离超过1公里说明 ',
+            title: 'GPS拍照超过容错距离说明',
             dataIndex: 'OverDistanceRemark'
         },
         {
-            title: '三方确认GPS照片距离超过1公里原因 ',
+            title: '三方确认GPS拍照超过容错距离原因',
             dataIndex: 'GFCConfirmReason'
         },
         {
-            title: '是否当日上传小票 ',
-            dataIndex: 'IsUpTicket'
-        },
-        {
-            title: '上传小票日期 ',
-            dataIndex: 'ReceiptUploadDate'
-        },
-        {
-            title: '上传小票时间 ',
-            dataIndex: 'ReceiptUploadTime'
-        },
-        {
-            title: '上传小票定位差异 ',
-            dataIndex: 'ReceiptDistance'
-        },
-        {
-            title: '小票GPS距离超过1公里原因 ',
-            dataIndex: 'ReceiptOverDistanceReason'
-        },
-        {
-            title: '小票GPS距离超过1公里说明 ',
-            dataIndex: 'ReceiptOverDistanceRemark'
-        },
-        {
-            title: '供应商确认小票GPS超过1公里原因 ',
-            dataIndex: 'SupplierConfirmReason'
-        },
-        {
-            title: '用户确认用餐金额 ',
-            dataIndex: 'ActualAmount',
-            render: (item: any) => {
-                if (item) {
-                    return parseFloat(item).toFixed(2)
-                }
-            }
-        },
-        {
-            title: '用户确认用餐人数 ',
-            dataIndex: 'DinnerNum'
-        },
-        {
-            title: '预订号 ',
-            dataIndex: 'BdsOrderId'
-        },
-        {
-            title: '是否预定成功 ',
-            dataIndex: 'IsOrderSuccess'
-        },
-        {
-            title: '业务目的 ',
-            dataIndex: 'MealPurpose'
-        },
-        {
-            title: '预算金额 ',
-            dataIndex: 'MealBudget',
-            render: (item: any) => {
-                if (item) {
-                    return parseFloat(item).toFixed(2)
-                }
-            }
-        },
-        {
-            title: '预算人数 ',
-            dataIndex: 'PreDinnerNum'
-        },
-        {
-            title: '手填HCP预算人数 ',
-            dataIndex: 'ManualHCPreNum'
-        },
-        {
-            title: '下单备注 ',
-            dataIndex: 'OrderRemark'
-        },
-        {
-            title: '预申请审批状态 ',
-            dataIndex: 'PreStatus'
-        },
-        {
-            title: '供应商 ',
-            dataIndex: 'Supplier'
-        },
-        {
-            title: 'HCP手填用餐人数 ',
-            dataIndex: 'ManualHCPDinnerNum'
-        },
-        {
-            title: '小票申请人备注 ',
-            dataIndex: 'TicketRemark'
-        },
-        {
-            title: '小票审核状态 ',
-            dataIndex: 'TicketStatus'
-        },
-        {
-            title: '小票审核原因 ',
-            dataIndex: 'ReceiptCheckRemark'
-        },
-        {
-            title: '小票是否Reopen ',
-            dataIndex: 'IsReceiptReopen'
-        },
-        {
-            title: '小票Reopen日期 ',
-            dataIndex: 'ReceiptReopenOperateDate'
-        },
-        {
-            title: '小票Reopen时间 ',
-            dataIndex: 'ReceiptReopenOperateTime'
-        },
-        {
-            title: '小票Reopen原因 ',
-            dataIndex: 'ReceiptReopenReason'
-        },
-        {
-            title: '小票Reopen原因详述 ',
-            dataIndex: 'ReceiptReopenReasonDetail'
-        },
-        {
-            title: '小票Reopen备注 ',
-            dataIndex: 'ReceiptReopenRemark'
-        },
-        {
-            title: '是否上传支持文件 ',
-            dataIndex: 'IsOrderUpload'
-        },
-        {
-            title: '是否系统重新分配 ',
+            title: '是否重新分配',
             dataIndex: 'IsTransfer'
         },
         {
-            title: '支持文件审批人姓名 ',
-            dataIndex: 'CurrentApproverMUDID'
+            title: '上传文件审批直线经理姓名',
+            dataIndex: 'BUHeadName'
         },
         {
-            title: '支持文件审批人MUDID ',
-            dataIndex: 'CurrentApproverName'
+            title: '上传文件审批直线经理MUDID',
+            dataIndex: 'BUHeadMUDID'
         },
         {
-            title: '支持文件审批日期 ',
-            dataIndex: 'CurrentApproveDate'
+            title: '上传文件审批日期',
+            dataIndex: 'BUHeadApproveDate'
         },
         {
-            title: '支持文件审批时间 ',
-            dataIndex: 'CurrentApproveTime'
-        },
-        {
-            title: '支持文件审批状态 ',
+            title: '上传文件审批状态',
             dataIndex: 'UploadState'
         },
         {
-            title: '未邀请外部客户原因 ',
-            dataIndex: 'NoHCPRemark'
+            title: '签到人数是否等于实际用餐人数',
+            dataIndex: 'IsAttentSame'
         },
         {
-            title: '支持文件审批原因 ',
-            dataIndex: 'ApproveRemark'
+            title: '签到人数调整原因',
+            dataIndex: 'AttentSameReason'
         },
         {
-            title: '支持文件申请人备注 ',
+            title: '是否与会议信息一致',
+            dataIndex: 'IsMeetingInfoSame'
+        },
+        {
+            title: '会议信息不一致原因',
+            dataIndex: 'MeetingInfoSameReason'
+        },
+        {
+            title: '退单原因/未送达会议未正常召开原因/会议文件丢失原因',
+            dataIndex: 'SpecialReason'
+        },
+        {
+            title: '上传文件备注',
             dataIndex: 'UploadRemark'
         },
         {
-            title: '其他支持性文件原因 ',
-            dataIndex: 'OtherUploadFileReason'
-        },
-        {
-            title: '其他支持性文件说明 ',
-            dataIndex: 'OtherUploadFileExplain'
-        },
-        {
-            title: '是否Re-open ',
+            title: '上传文件是否Re-Open',
             dataIndex: 'IsReopenState'
         },
         {
-            title: '支持文件Re-Open日期 ',
-            dataIndex: 'ReopenDate'
+            title: '上传文件Re-Open操作人',
+            dataIndex: 'ReopenOperatorName'
         },
         {
-            title: '支持文件Re-Open时间 ',
-            dataIndex: 'ReopenTime'
+            title: '上传文件Re-Open操作人MUDID',
+            dataIndex: 'ReopenOperatorMUDID'
         },
         {
-            title: '支持文件Re-Open原因 ',
+            title: '上传文件Re-Open日期',
+            dataIndex: 'ReopenOperateDate'
+        },
+        {
+            title: '上传文件Re-Open时间',
+            dataIndex: 'ReopenOperateTime'
+        },
+        {
+            title: '上传文件Re-Open发起人姓名',
+            dataIndex: 'ReopenOriginatorName'
+        },
+        {
+            title: '上传文件Re-Open发起人MUDID',
+            dataIndex: 'ReopenOriginatorMUDID'
+        },
+        {
+            title: '上传文件Re-Open原因',
             dataIndex: 'ReopenReason'
         },
         {
-            title: '支持文件Re-Open原因详述 ',
-            dataIndex: 'ReopenReasonDetail'
+            title: '上传文件Re-Open备注',
+            dataIndex: 'ReopenRemark'
         },
         {
-            title: '是否超预算金额 ',
-            dataIndex: 'IsOverBudget'
+            title: '上传文件Re-Open审批状态',
+            dataIndex: 'ReopenUploadState'
         },
         {
-            title: '是否超人均300 ',
-            dataIndex: 'IsOverPre'
+            title: '上传文件是否重新分配审批人',
+            dataIndex: 'IsReAssign'
         },
         {
-            title: '超预算/超人均原因 ',
-            dataIndex: 'OverReason'
+            title: '上传文件重新分配审批人姓名',
+            dataIndex: 'ReAssignBUHeadName'
         },
         {
-            title: '是否超季度/月度上限 ',
-            dataIndex: 'IsOverMonthQuarter'
+            title: '上传文件重新分配审批人MUDID',
+            dataIndex: 'ReAssignBUHeadMUDID'
         },
         {
-            title: '项目组特殊备注 ',
+            title: '金额调整原因',
+            dataIndex: 'XmsOrderReason'
+        },
+        {
+            title: '是否申请退单',
+            dataIndex: 'IsCancel'
+        },
+        {
+            title: '是否退单成功',
+            dataIndex: 'IsCancelSuccess'
+        },
+        {
+            title: '是否收餐/未送达',
+            dataIndex: 'IsReceive'
+        },
+        {
+            title: '是否与预定餐品一致',
+            dataIndex: 'IsMealSame'
+        },
+        {
+            title: '用户确认金额调整原因',
+            dataIndex: 'RealPriceChangeReason'
+        },
+        {
+            title: '用户确认金额调整备注',
+            dataIndex: 'RealPriceChangeRemark'
+        },
+        {
+            title: '实际用餐人数调整原因',
+            dataIndex: 'RealCountChangeReason'
+        },
+        {
+            title: '实际用餐人数调整备注',
+            dataIndex: 'RealCountChangeRemrak'
+        },
+        {
+            title: '订单状态',
+            dataIndex: 'OrderState'
+        },
+        {
+            title: '项目组特殊备注',
             dataIndex: 'IsSpecialOrderStatus'
         },
         {
-            title: '项目组上传文件备注 ',
-            dataIndex: 'MailImageSrc'
-        },
-        {
-            title: 'GFC审批状态',
+            title: 'GFC审核状态',
             dataIndex: 'GFCApproveState'
         },
         {
-            title: '是否GFC审批通过 ',
+            title: '是否GFC审批通过',
             dataIndex: 'THApprove'
         },
         {
-            title: 'GFC审批通过时间 ',
+            title: 'GFC审批通过时间',
             dataIndex: 'THApprovePassDate'
         },
         {
-            title: '是否On-hold ',
+            title: '是否On-hold',
             dataIndex: 'OnHoldState'
         },
         {
-            title: 'On-hold原因 ',
+            title: 'On-hold原因',
             dataIndex: 'OnHoldReasonState'
         },
         {
-            title: '与用户沟通备注 ',
+            title: '与用户沟通备注',
             dataIndex: 'ReasonForApplier'
         },
         {
-            title: '与合规沟通备注 ',
+            title: '与合规沟通备注',
             dataIndex: 'ReasonForPMO'
         },
         {
-            title: 'On-hold时间 ',
+            title: 'On-hold时间',
             dataIndex: 'OnHoldDate'
         },
         {
-            title: '是否计次 ',
+            title: '是否计次',
             dataIndex: 'IssueState'
         },
         {
-            title: '计次原因 ',
-            dataIndex: 'Reason'
+            title: '计次原因',
+            dataIndex: 'IssueReason'
         },
         {
-            title: '计次时间 ',
+            title: '计次时间',
             dataIndex: 'IssueDate'
         },
         {
-            title: '是否iSight ',
+            title: '是否iSight',
             dataIndex: 'ISightState'
         },
         {
-            title: 'iSight时间 ',
+            title: 'iSight时间',
             dataIndex: 'ISightDate'
         },
         {
-            title: 'iSight No. ',
+            title: 'iSight No.',
             dataIndex: 'ISightNo'
         },
     ]
@@ -605,7 +617,7 @@ const Detail: FC<DetailProps> = (props) => {
         },
         {
             title: '操作',
-            dataIndex: 'ActionTypeView'
+            dataIndex: 'ActionType'
         },
         {
             title: '审批意见',
@@ -613,7 +625,7 @@ const Detail: FC<DetailProps> = (props) => {
         },
         {
             title: '操作时间',
-            dataIndex: 'ApproveDateView',
+            dataIndex: 'ApproveDate',
             width: 200,
             fixed: 'right'
         }
@@ -626,9 +638,20 @@ const Detail: FC<DetailProps> = (props) => {
                 onOk: () => {
                     setLoading(true)
                     specialForm.validateFields().then((values) => {
+
+                        let specialValue = 0
+
+                        if(special === 1){
+                            specialValue = 1
+                        }
+
+                        if(special === 4){
+                            specialValue = 2
+                        }
+
                         UpdateConfirmReason({
-                            gcode: id,
-                            specialType: special,
+                            htcode: id,
+                            specialType: specialValue,
                             specialReason: values.specialReason
                         }).then((res) => {
                             if (res.data && res.data === 1) {
@@ -979,8 +1002,8 @@ const Detail: FC<DetailProps> = (props) => {
                                     <Radio.Group disabled={true} value={special} onChange={e => {
                                         setSpecial(e.target.value)
                                     }}>
-                                        <Radio value={1}>{'GPS拍照 > 1公里'}</Radio>
-                                        <Radio value={2}>未使用GPS拍照</Radio>
+                                        <Radio value={1}>超容错距离</Radio>
+                                        <Radio value={4}>未使用GPS拍照</Radio>
                                     </Radio.Group>
                                 </div>
                             </div>
@@ -992,20 +1015,22 @@ const Detail: FC<DetailProps> = (props) => {
                             {
                                 special === 1 ?
                                     <ProFormSelect
-                                        label={'GPS拍摄>1公里原因'}
+                                        label={'超容错距离原因'}
                                         name={'specialReason'}
                                         required
                                         rules={[{required: true, message: '该项必填！'}]}
                                         options={[
+                                            {label: '主院区申请HT，分院区开会', value: '主院区申请HT，分院区开会'},
+                                            {label: '医院Veeva经纬度偏差', value: '医院Veeva经纬度偏差'},
                                             {label: '用户GPS定位偏差', value: '用户GPS定位偏差'},
-                                            {label: '用户未在餐厅定位', value: '用户未在餐厅定位'},
+                                            {label: '用户未在目标医院定位', value: '用户未在目标医院定位'},
                                             {label: '未获取到拍照地位置', value: '未获取到拍照地位置'},
                                         ]}
                                     />
                                     : null
                             }
                             {
-                                special === 2 ?
+                                special === 4 ?
                                     <ProFormSelect
                                         label={'未使用GPS拍照原因'}
                                         name={'specialReason'}
@@ -1019,7 +1044,7 @@ const Detail: FC<DetailProps> = (props) => {
                                     : null
                             }
                         </Col>
-                        {(special === 1 || special === 2) ? <Col style={{paddingTop: 35, paddingLeft: 10}}>
+                        {(special === 1 || special === 4) ? <Col style={{paddingTop: 35, paddingLeft: 10}}>
                             <a
                                 className={'orange-a'}
                                 onClick={saveSpecial}
@@ -1067,11 +1092,11 @@ const Detail: FC<DetailProps> = (props) => {
                 <div style={{fontSize: 16, fontWeight: 600}}>签到表照片</div>
                 <Image.PreviewGroup>
                     {
-                        detail?.ReceiptList?.length ? detail?.ReceiptList?.map((item: any, index: number) => {
+                        detail?.SignInList?.length ? detail?.SignInList?.map((item: any, index: number) => {
                             return <Image
                                 key={`image${index}`}
                                 style={{padding: 12}}
-                                src={item.ReceiptImage || ''}
+                                src={item.SignInImage || ''}
                             />
                         }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
                             <Empty/>
@@ -1116,7 +1141,8 @@ const Detail: FC<DetailProps> = (props) => {
                             </Col>
                         }
                     </Image.PreviewGroup>
-                </Row><Divider/>
+                </Row>
+                <Divider/>
                 <div style={{fontSize: 16, fontWeight: 600}}>未使用GPS拍照支持文件</div>
                 <Row>
                     <Image.PreviewGroup>
@@ -1169,7 +1195,7 @@ const Detail: FC<DetailProps> = (props) => {
             const decisionForm = values[2]
 
             let submitValues: any = {
-                gcode: id,
+                htcode: id,
                 // Decision: decisionForm?.Decision,
                 onHold: onHold,
                 THApproveState: detail.THApproveState

@@ -23,7 +23,7 @@ export async function IssueOrder(data?: any, options?: { [key: string]: any }) {
 }
 
 export async function LoadOrderDetailByGCode(data?: any, options?: { [key: string]: any }) {
-    return request('/ThirdApprove/T/ThirdOrder/LoadOrderDetailByGCode',{
+    return request('/ThirdApprove/T/ThirdOrder/LoadOrderDetailByHTCode',{
         data: data,
         method: 'POST',
     })
