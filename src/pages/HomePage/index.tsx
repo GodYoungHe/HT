@@ -123,7 +123,7 @@ const HomePage: React.FC = () => {
         >
             <Row>
                 {middleCardNode(
-                    '待审批',
+                    '待三方审批',
                     '当前所有流转到GFC审核的单据总量',
                     `${data?.waitApproveCnt || 0}`,
                     '#d9f0e4',
@@ -155,7 +155,7 @@ const HomePage: React.FC = () => {
         </Card>
 
         <Card
-            title={'异常订单'}
+            title={'用户行为'}
             className={styles.bottomCard}
         >
             <Row>

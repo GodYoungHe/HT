@@ -4,7 +4,12 @@ import {Button, Divider, message} from "antd";
 import Detail from "@/pages/ApprovalManagement/components/Detail";
 import Count from "@/pages/ApprovalManagement/components/Count";
 import UploadFiles from "@/pages/ApprovalManagement/components/UploadFiles";
-import {ExportOrderReviewReport, LoadOrderReviewList, LoadTa} from "@/pages/ApprovalManagement/service";
+import {
+    ExportOrderReviewReport,
+    LoadOrderReviewList,
+    LoadTa,
+    UploadFileReport
+} from "@/pages/ApprovalManagement/service";
 import {useModel} from "@@/exports";
 import dayjs from "dayjs";
 
@@ -26,6 +31,8 @@ const ApprovalManagement: React.FC = () => {
 
     const [loading, setLoading] = useState(false)
 
+    const [detailLoading, setDetailLoading] = useState(false)
+
     const form = useRef<any>(null)
 
     const actionRef = useRef<any>(null)
@@ -35,33 +42,51 @@ const ApprovalManagement: React.FC = () => {
     const uploadButtonVisible = info?.ListPermissions?.indexOf('00000000-0000-2000-0001-000000000003') !== -1
 
     useEffect(() => {
-        LoadTa().then((res) => {
+        let RxArr: any[] = []
+        let VxArr: any[] = []
+        const RxObj: any = {}
+        const VxObj: any = {}
 
-            const RxObj: any = {}
-            const VxObj: any = {}
+        Promise.all([
+            LoadTa({market: 'Rx'}),
+            LoadTa({market: 'Vx'})
+        ]).then((res)=>{
 
-            if (res.state) {
-                res?.data?.forEach((t: { MarketName: string, TAName: string }) => {
+            const resRx = res[0]
+            const resVx = res[1]
 
-                    if (t.MarketName === 'Rx') {
-
-                        RxObj[t.TAName] = {text: t.TAName}
-
-                    }
-                    if (t.MarketName === 'Vx') {
-
-                        VxObj[t.TAName] = {text: t.TAName}
-
-                    }
-
-                })
+            if (resRx.state === 1) {
+                RxArr = resRx.data
             }
+
+            if (resVx.state === 1) {
+                VxArr = resVx.data
+            }
+
+            let holeArr: any[] = RxArr.concat(VxArr)
+
+            holeArr?.forEach((t: { MarketName: string, Name: string }) => {
+
+                if (t.MarketName === 'Rx') {
+
+                    RxObj[t.Name] = {text: t.Name}
+
+                }
+                if (t.MarketName === 'Vx') {
+
+                    VxObj[t.Name] = {text: t.Name}
+
+                }
+
+            })
 
             setTAList({
                 rxList: RxObj,
                 vxList: VxObj
             })
+
         })
+
     }, [])
 
     const tableColummns = [
@@ -189,13 +214,13 @@ const ApprovalManagement: React.FC = () => {
                 onChange: (value: string) => {
                     setMarketState(value)
                     form.current.setFieldsValue({
-                        TA: null
+                        ta: null
                     })
                 },
                 onClear: () => {
                     setMarketState('')
                     form.current.setFieldsValue({
-                        TA: null
+                        ta: null
                     })
                 }
             },
@@ -215,6 +240,26 @@ const ApprovalManagement: React.FC = () => {
         {
             title: '订单时长',
             dataIndex: 'duration',
+        },
+        {
+            title: '送餐时间',
+            valueType: 'dateTimeRange',
+            dataIndex: 'dinnerTime',
+            hideInTable: true,
+            fieldProps: {
+                showTime: false,
+                format: 'YYYY-MM-DD',
+            }
+        },
+        {
+            title: '上级经理审批时间',
+            valueType: 'dateTimeRange',
+            dataIndex: 'managerApprove',
+            hideInTable: true,
+            fieldProps: {
+                showTime: false,
+                format: 'YYYY-MM-DD',
+            }
         },
         {
             title: '会议类型',
@@ -261,99 +306,175 @@ const ApprovalManagement: React.FC = () => {
                 2: '与合规沟通'
             }
         },
+        {
+            title: '支持文件是否Reopen',
+            valueType: 'select',
+            dataIndex: 'isReOpen',
+            valueEnum: {
+                1: '是',
+                0: '否'
+            }
+        },
     ]
 
-    const columns = [...tableColummns.map((t: any)=>{return {...t, hideInSearch: true}})
-        ,...searchColumns.map((t: any)=>{return {...t, hideInTable: true}})]
+    const columns = [...tableColummns.map((t: any) => {
+        return {...t, hideInSearch: true}
+    })
+        , ...searchColumns.map((t: any) => {
+            return {...t, hideInTable: true}
+        })]
+
+    const downLoadFiles = () => {
+
+        const rest = form.current.getFieldsValue()
+
+        let flag = false
+
+        if (rest.dinnerTime) {
+            rest.dinnerTimeBegin = rest.dinnerTime[0].format('YYYY-MM-DD')
+            rest.dinnerTimeEnd = rest.dinnerTime[1].format('YYYY-MM-DD')
+            const diff = rest.dinnerTime[1].diff(rest.dinnerTime[0], 'month')
+
+            if (diff <= 3) {
+                flag = true
+            }
+            delete rest.dinnerTime
+        }
+
+        if (rest.managerApprove) {
+            rest.managerApproveBegin = rest.managerApprove[0].format('YYYY-MM-DD')
+            rest.managerApproveEnd = rest.managerApprove[1].format('YYYY-MM-DD')
+
+            const diff2 = rest.managerApprove[1].diff(rest.managerApprove[0], 'month')
+
+            if (diff2 <= 3) {
+                flag = true
+            }
+            delete rest.managerApprove
+        }
+
+        if (rest.approveTime) {
+            rest.approveTimeBegin = rest.approveTime[0].format('YYYY-MM-DD')
+            rest.approveTimeEnd = rest.approveTime[1].format('YYYY-MM-DD')
+
+            const diff3 = rest.approveTime[1].diff(rest.approveTime[0], 'month')
+
+            if (diff3 <= 3) {
+                flag = true
+            }
+            delete rest.approveTime
+        }
+
+        const requestExport = () => {
+            setLoading(true)
+            ExportOrderReviewReport(rest).then((res) => {
+                if (res) {
+                    const content = res; // 文件流
+                    const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
+                    const fileName = `HT订单审核${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
+                    if ('download' in document.createElement('a')) {
+                        // 非IE下载
+                        const link = document.createElement('a');
+                        link.download = fileName;
+                        link.href = URL.createObjectURL(blob);
+                        document.body.appendChild(link);
+                        link.click();
+                        URL.revokeObjectURL(link.href); // 释放URL 对象
+                        document.body.removeChild(link);
+                    }
+                    message.success('导出文件成功!')
+                } else {
+                    message.error('导出文件失败！')
+                }
+            }).finally(() => {
+                setLoading(false)
+            })
+        }
+
+        if (flag) {
+            requestExport()
+        } else {
+            LoadOrderReviewList({...rest, pageSize: 20, pageIndex: 1}).then((res) => {
+                if (res.state === 1) {
+                    if (res.total >= 1000) {
+                        message.error('导出条数过多，请增加筛选条件！')
+                    } else {
+                        requestExport()
+                    }
+                }
+            })
+        }
+    }
+
+    const downloadDetails = () => {
+
+        const rest = form.current.getFieldsValue()
+
+        if (rest.dinnerTime) {
+            rest.dinnerTimeBegin = rest.dinnerTime[0].format('YYYY-MM-DD')
+            rest.dinnerTimeEnd = rest.dinnerTime[1].format('YYYY-MM-DD')
+
+            delete rest.dinnerTime
+        }
+
+        if (rest.managerApprove) {
+            rest.managerApproveBegin = rest.managerApprove[0].format('YYYY-MM-DD')
+            rest.managerApproveEnd = rest.managerApprove[1].format('YYYY-MM-DD')
+
+            delete rest.managerApprove
+        }
+
+        if (rest.approveTime) {
+            rest.approveTimeBegin = rest.approveTime[0].format('YYYY-MM-DD')
+            rest.approveTimeEnd = rest.approveTime[1].format('YYYY-MM-DD')
+        }
+
+        setDetailLoading(true)
+
+        UploadFileReport(rest).then((res) => {
+            if (res) {
+
+                if(res.size < 100){
+                    message.error('暂无上传明细数据！')
+                    return
+                }
+
+                const content = res; // 文件流
+                const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
+                const fileName = `上传明细${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
+                if ('download' in document.createElement('a')) {
+                    // 非IE下载
+                    const link = document.createElement('a');
+                    link.download = fileName;
+                    link.href = URL.createObjectURL(blob);
+                    document.body.appendChild(link);
+                    link.click();
+                    URL.revokeObjectURL(link.href); // 释放URL 对象
+                    document.body.removeChild(link);
+                }
+                message.success('导出文件成功!')
+            } else {
+                message.error('导出文件失败！')
+            }
+        }).finally(() => {
+            setDetailLoading(false)
+        })
+    }
 
     return <PageContainer breadcrumb={{}}>
         <ProTable
-            headerTitle={<Button
-                type={'primary'}
-                loading={loading}
-                onClick={() => {
-                    const rest = form.current.getFieldsValue()
-
-                    let flag = false
-
-                    // if (rest.dinnerTime) {
-                    //     rest.dinnerTimeBegin = rest.dinnerTime[0].format('YYYY-MM-DD')
-                    //     rest.dinnerTimeEnd = rest.dinnerTime[1].format('YYYY-MM-DD')
-                    //     const diff = rest.dinnerTime[1].diff( rest.dinnerTime[0], 'month')
-                    //
-                    //     if(diff <= 3){
-                    //         flag = true
-                    //     }
-                    //     delete rest.dinnerTime
-                    // }
-                    //
-                    // if (rest.managerApprove) {
-                    //     rest.managerApproveBegin = rest.managerApprove[0].format('YYYY-MM-DD')
-                    //     rest.managerApproveEnd = rest.managerApprove[1].format('YYYY-MM-DD')
-                    //
-                    //     const diff2 = rest.managerApprove[1].diff( rest.managerApprove[0], 'month')
-                    //
-                    //     if(diff2 <= 3){
-                    //         flag = true
-                    //     }
-                    //     delete rest.managerApprove
-                    // }
-
-                    if (rest.approveTime) {
-                        rest.approveTimeBegin = rest.approveTime[0].format('YYYY-MM-DD')
-                        rest.approveTimeEnd = rest.approveTime[1].format('YYYY-MM-DD')
-
-                        const diff3 = rest.approveTime[1].diff( rest.approveTime[0], 'month')
-
-                        if(diff3 <= 3){
-                            flag = true
-                        }
-                        delete rest.approveTime
-                    }
-
-                    const requestExport = () => {
-                        setLoading(true)
-                        ExportOrderReviewReport(rest).then((res)=>{
-                            if(res){
-                                const content = res; // 文件流
-                                const blob = new Blob([content], {type: 'application/vnd.ms-excel'});
-                                const fileName = `HT订单审核${dayjs().format('YYYY-MM-DD HH:mm:ss')}.xlsx`;
-                                if ('download' in document.createElement('a')) {
-                                    // 非IE下载
-                                    const link = document.createElement('a');
-                                    link.download = fileName;
-                                    link.href = URL.createObjectURL(blob);
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    URL.revokeObjectURL(link.href); // 释放URL 对象
-                                    document.body.removeChild(link);
-                                }
-                                message.success('导出文件成功!')
-                            }else {
-                                message.error('导出文件失败！')
-                            }
-                        }).finally(()=>{
-                            setLoading(false)
-                        })
-                    }
-
-                    if(flag){
-                        requestExport()
-                    }else{
-                        LoadOrderReviewList({...rest, pageSize: 20, pageIndex: 1}).then((res)=>{
-                            if(res.state === 1){
-                                if(res.total >= 1000){
-                                    message.error('导出条数过多，请增加筛选条件！')
-                                }else {
-                                    requestExport()
-                                }
-                            }
-                        })
-                    }
-
-                }}
-
-            >导出文件</Button>}
+            headerTitle={<div>
+                <Button
+                    type={'primary'}
+                    loading={loading}
+                    onClick={downLoadFiles}
+                >导出文件</Button>
+                <Button
+                    style={{marginLeft: 8}}
+                    loading={detailLoading}
+                    onClick={downloadDetails}
+                >导出上传明细</Button>
+            </div>}
             columns={columns}
             form={{
                 initialValues: {
@@ -369,6 +490,18 @@ const ApprovalManagement: React.FC = () => {
                 x: 'max-content'
             }}
             request={async ({pageSize, current, ...rest}) => {
+
+                // if (rest.dinnerTime) {
+                //     rest.dinnerTimeBegin = rest.dinnerTime[0]
+                //     rest.dinnerTimeEnd = rest.dinnerTime[1]
+                //     delete rest.dinnerTime
+                // }
+                //
+                // if (rest.managerApprove) {
+                //     rest.managerApproveBegin = rest.managerApprove[0]
+                //     rest.managerApproveEnd = rest.managerApprove[1]
+                //     delete rest.managerApprove
+                // }
 
                 if (rest.dinnerTime) {
                     rest.dinnerTimeBegin = rest.dinnerTime[0]

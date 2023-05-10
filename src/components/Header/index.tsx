@@ -1,7 +1,6 @@
 import React from "react";
 import {useModel} from "@@/exports";
 import {Modal} from "antd";
-import {exit} from "@/components/Header/service";
 
 
 const Header: React.FC = () => {
@@ -18,7 +17,9 @@ const Header: React.FC = () => {
                 Modal.confirm({
                     title: '是否确认退出？',
                     onOk: () => {
-                        window.location.href = 'https://gmealdev.igskapp.com/ThirdApprove/T/Home/Exit'
+                        //https://catering-prod.igskapp.com/ThirdApprove/
+                        // window.location.href = 'https://wxm-dev.igskapp.com/ThirdApprove/T/Home/Exit'
+                        window.location.href = 'https://catering-prod.igskapp.com/ThirdApprove/T/Home/Exit'
                     }
                 })
             }}

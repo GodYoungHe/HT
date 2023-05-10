@@ -29,4 +29,9 @@ export async function IssueAppeal(data?: any, options?: { [key: string]: any }) 
     })
 }
 
-
+export async function IssueTimeOrder(data?: any, options?: { [key: string]: any }) {
+    return request('/ThirdApprove/T/ThirdOrder/IssueTimeOrder',{
+        data: data,
+        method: 'POST',
+    })
+}

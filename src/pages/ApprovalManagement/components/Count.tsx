@@ -30,8 +30,11 @@ const Count: FC<CountProps> = (props) => {
             }).then((res) => {
                 if (res.state && res.state === 1) {
                     if (res.IsTimeIssue) {
+
+                        let initReason = res.data?.split(',')
+
                         formRef.setFieldsValue({
-                            Reason: res.data
+                            Reason: initReason
                         })
                     }
                     setDetail(res)
@@ -47,12 +50,23 @@ const Count: FC<CountProps> = (props) => {
 
     const handleSubmit = () => {
         formRef.validateFields().then((values) => {
+
+            const submitReason = values.Reason.reduce((newVal: string, current: string) => {
+                let str
+                if (!newVal) {
+                    str = current
+                } else {
+                    str = newVal + ',' + current
+                }
+                return str
+            }, '')
+
             IssueOrder({
                 htCode: id,
-                Reason: values.Reason
+                Reason: submitReason
             }).then((res) => {
                 if (res.state && res.state === 1) {
-                    message.success('订单计次成功！')
+                    message.success(res.txt)
                     actionRef?.current?.reload()
                     // if (res.Reason) {
                     //     formRef.setFieldsValue({
@@ -84,8 +98,8 @@ const Count: FC<CountProps> = (props) => {
             onCancel()
         }}
         destroyOnClose={true}
-        width={400}
-        title={'订单Issue计次'}
+        width={560}
+        title={'订单计次'}
         footer={<div>
             <Button onClick={()=>{
                 formRef.resetFields()
@@ -93,7 +107,7 @@ const Count: FC<CountProps> = (props) => {
                 setDetail(null)
                 onCancel()
             }}>取消</Button>
-            {detail?.IssueState === '是' ? null :
+            {detail?.IsTimeIssue === 1 ? null :
                 <Button type={'primary'} onClick={handleSubmit} style={{marginLeft: 5}}>提交</Button>}
         </div>}
     >
@@ -105,7 +119,7 @@ const Count: FC<CountProps> = (props) => {
                 layout={'horizontal'}
                 labelCol={{span: 6}}
                 initialValues={{
-                    type: 'Issue计次'
+                    type: 'OnHold计次'
                 }}
             >
                 <ProFormText
@@ -115,15 +129,32 @@ const Count: FC<CountProps> = (props) => {
                 />
                 <ProFormSelect
                     label={'计次原因'}
-                    width={'md'}
+                    width={'xl'}
                     name={'Reason'}
                     required={true}
                     readonly={detail?.IsTimeIssue === 1}
                     rules={[{required: true, message: '该项为必填项！'}]}
+                    fieldProps={{mode: 'multiple'}}
                     options={[
                         {
-                            label: 'HCP自带酒水',
-                            value: 'HCP自带酒水'
+                            label: '不合理的签到表日期与会议日期差异',
+                            value: '不合理的签到表日期与会议日期差异'
+                        },
+                        {
+                            label: '屏拍照片或者非会议现场照片',
+                            value: '屏拍照片或者非会议现场照片'
+                        },
+                        {
+                            label: '未使用GPS拍照且无技术供应商出具的证明邮件',
+                            value: '未使用GPS拍照且无技术供应商出具的证明邮件'
+                        },
+                        {
+                            label: '用户行为/操作导致的GPS位置严重偏离',
+                            value: '用户行为/操作导致的GPS位置严重偏离'
+                        },
+                        {
+                            label: '支持文件不全',
+                            value: '支持文件不全'
                         }
                     ]}
                 />

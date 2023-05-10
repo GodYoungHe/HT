@@ -37,7 +37,7 @@ export default defineConfig({
           code: '00000000-0000-2000-0001-000000000000'
         },
         {
-          name: 'Issue记录',
+          name: '计次记录',
           path: 'issueRecord',
           component: './IssueRecord',
           code: '00000000-0000-2000-0002-000000000000'

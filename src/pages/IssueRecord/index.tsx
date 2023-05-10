@@ -1,7 +1,7 @@
 import {PageContainer, ProTable} from "@ant-design/pro-components";
 import React, {useEffect, useRef, useState} from "react";
 import {Button, Divider, message, Modal} from "antd";
-import {IssueAppeal, IssueConfirm, LoadIssueData, LoadIssueReport} from "@/pages/IssueRecord/service";
+import {IssueAppeal, IssueConfirm, IssueTimeOrder, LoadIssueData, LoadIssueReport} from "@/pages/IssueRecord/service";
 import dayjs from "dayjs";
 
 const IssueRecord: React.FC = () => {
@@ -16,7 +16,7 @@ const IssueRecord: React.FC = () => {
         {
             title: '申请人姓名',
             dataIndex: 'ApplierName',
-            hideInSearch: true
+            hideInSearch: true,
         },
         {
             title: '申请人MUDID',
@@ -30,9 +30,10 @@ const IssueRecord: React.FC = () => {
             ellipsis: true
         },
         {
-            title: '记录时间',
+            title: 'OnHold计次时间',
             hideInSearch: true,
             dataIndex: 'CreateDate',
+            width: 180,
         },
         {
             title: '记录日期',
@@ -45,18 +46,56 @@ const IssueRecord: React.FC = () => {
             }
         },
         {
-            title: '记录操作人姓名',
+            title: '操作人姓名',
             dataIndex: 'OperatorName',
             hideInSearch: true
         },
         {
-            title: '记录操作人MUDID',
+            title: '操作人MUDID',
             dataIndex: 'OperatorMUDID',
             hideInSearch: true
         },
         {
+            title: '是否确认计次',
+            dataIndex: 'Issue',
+            valueType: 'select',
+            valueEnum: {
+                0: 'OnHold计次',
+                1: '确认计次',
+                2: '申诉成功'
+            },
+            hideInTable: true
+        },
+        // {
+        //     title: '是否确认计次',
+        //     dataIndex: 'IsIssue',
+        //     hideInSearch: true,
+        //     render: (item: any) => {
+        //         if(item === '0'){
+        //             return 'OnHold计次'
+        //         }else if(item === '1'){
+        //             return '确认计次'
+        //         }else if(item === '2'){
+        //             return '申诉成功'
+        //         }else {
+        //             return '-'
+        //         }
+        //     }
+        // },
+        {
+            title: '计次状态',
+            dataIndex: 'IssueState',
+            hideInSearch: true
+        },
+        {
+            title: '操作时间',
+            dataIndex: 'IssueTime',
+            width: 180,
+            hideInSearch: true
+        },
+        {
             title: '操作',
-            width: 140,
+            width: 160,
             valueType: 'option',
             fixed: 'right',
             render: (item: any, record: any) => {
@@ -64,7 +103,7 @@ const IssueRecord: React.FC = () => {
                 const code = record.HTCode.split('(')[0]
 
                 return <div>
-                    {record.IsIssue === '0'?<a
+                    {record.IsIssue === '0'?<div><a
                         className={'orange-a'}
                         onClick={() => {
                             Modal.confirm({
@@ -89,8 +128,30 @@ const IssueRecord: React.FC = () => {
                         }}
                     >
                         确认计次
-                    </a>: null}
-                    {record.IsIssue === '1'?<a
+                    </a>
+                        <Divider type={'vertical'}/>
+                        <a
+                            className={'orange-a'}
+                            onClick={()=>{
+                                Modal.confirm({
+                                    title: '是否取消计次？',
+                                    onOk: () => {
+                                        IssueTimeOrder({
+                                            htCode: code
+                                        }).then((res)=>{
+                                            if(res.state && res.state === 1){
+                                                message.success(res.txt)
+                                                actionRef.current.reload()
+                                            }else{
+                                                message.error('取消计次失败!')
+                                            }
+                                        })
+                                    }
+                                })
+                            }}
+                        >取消计次</a>
+                    </div>: null}
+                    {(record.IsIssue === '1' && record.ShowAppeal=== '1')?<a
                         className={'orange-a'}
                         onClick={() => {
                             Modal.confirm({
@@ -199,7 +260,7 @@ const IssueRecord: React.FC = () => {
                 defaultPageSize: 10,
                 showSizeChanger: true
             }}
-            scroll={{x: 1200}}
+            scroll={{x: 1500}}
         />
     </PageContainer>
 }

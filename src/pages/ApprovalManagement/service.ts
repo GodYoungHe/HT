@@ -78,3 +78,11 @@ export async function ExportOrderReviewReport(data?: any, options?: { [key: stri
         responseType: 'blob',
     })
 }
+
+export async function UploadFileReport(data?: any, options?: { [key: string]: any }) {
+    return request('/ThirdApprove/T/ThirdOrder/UploadFileReport',{
+        data: data,
+        method: 'POST',
+        responseType: 'blob',
+    })
+}

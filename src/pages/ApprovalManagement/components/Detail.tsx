@@ -12,7 +12,7 @@ import {
 } from "@ant-design/pro-components";
 import {ApprovalDecision, LoadOrderDetailByGCode, UpdateConfirmReason} from "@/pages/ApprovalManagement/service";
 import {useModel} from "@@/exports";
-import {supportFilesListExternal, supportFilesListInternal, ticketReopenDetail, ticketReopenReason} from "./data";
+import {ExternalList, InnerList, ticketReopenDetail, ticketReopenReason} from "./data";
 import {stringifyNumbers} from "@/utils/format";
 import moment from "moment";
 
@@ -107,7 +107,8 @@ const Detail: FC<DetailProps> = (props) => {
             (values.THApproveState === 1 && !judge && (
                     (values.OnHold === 1 && values.OnHoldReason === 1) ||
                     (values.OnHold === 1 && values.OnHoldReason === 2) ||
-                    (values.OnHold === 0 && values.OnHoldReason === 0)
+                    (values.OnHold === 0 && values.OnHoldReason === 0) ||
+                    (values.OnHold === 0 && values.OnHoldReason === 1)
                 )
             )) {
 
@@ -283,20 +284,20 @@ const Detail: FC<DetailProps> = (props) => {
         {
             title: '预订金额',
             dataIndex: 'TotalPrice',
-            render: (item: any) => {
-                if (item) {
-                    return parseFloat(item).toFixed(2)
-                }
-            }
+            // render: (item: any) => {
+            //     if (item) {
+            //         return parseFloat(item).toFixed(2)
+            //     }
+            // }
         },
         {
             title: '实际金额',
             dataIndex: 'ActualAmount',
-            render: (item: any) => {
-                if (item) {
-                    return parseFloat(item).toFixed(2)
-                }
-            }
+            // render: (item: any) => {
+            //     if (item) {
+            //         return parseFloat(item).toFixed(2)
+            //     }
+            // }
         },
         {
             title: '实际用餐人数',
@@ -309,11 +310,11 @@ const Detail: FC<DetailProps> = (props) => {
         {
             title: '用户确认金额',
             dataIndex: 'RealPrice',
-            render: (item: any) => {
-                if (item) {
-                    return parseFloat(item).toFixed(2)
-                }
-            }
+            // render: (item: any) => {
+            //     if (item) {
+            //         return parseFloat(item).toFixed(2)
+            //     }
+            // }
         },
         {
             title: '餐厅名称',
@@ -444,7 +445,7 @@ const Detail: FC<DetailProps> = (props) => {
             dataIndex: 'ReopenReason'
         },
         {
-            title: '上传文件Re-Open备注',
+            title: '上传文件Re-Open原因详述',
             dataIndex: 'ReopenRemark'
         },
         {
@@ -525,11 +526,19 @@ const Detail: FC<DetailProps> = (props) => {
         },
         {
             title: 'On-hold原因',
-            dataIndex: 'OnHoldReasonState'
+            dataIndex: 'OnHoldReasonState',
+        },
+        {
+            title: '首次与用户沟通时间',
+            dataIndex: 'ForApplierDate',
         },
         {
             title: '与用户沟通备注',
             dataIndex: 'ReasonForApplier'
+        },
+        {
+            title: '首次与合规沟通时间',
+            dataIndex: 'ForPMODate',
         },
         {
             title: '与合规沟通备注',
@@ -641,11 +650,11 @@ const Detail: FC<DetailProps> = (props) => {
 
                         let specialValue = 0
 
-                        if(special === 1){
+                        if (special === 1) {
                             specialValue = 1
                         }
 
-                        if(special === 4){
+                        if (special === 4) {
                             specialValue = 2
                         }
 
@@ -876,9 +885,9 @@ const Detail: FC<DetailProps> = (props) => {
                                 name={'GFCReopenReason'}
                                 required
                                 rules={[{required: true, message: '该项必填!'}]}
-                                options={detail.MealType === "External Meals" ?
-                                    supportFilesListExternal :
-                                    supportFilesListInternal
+                                options={detail.MeetingTypeValue === "院内会" ?
+                                    InnerList :
+                                    ExternalList
                                 }
                                 fieldProps={{
                                     mode: 'multiple'
@@ -976,6 +985,21 @@ const Detail: FC<DetailProps> = (props) => {
                     columns={approvalColumns}
                     search={false}
                     headerTitle={'操作记录'}
+                    // toolBarRender={() => {
+                    //     return [<Tooltip
+                    //         key={'downloadTooltip'}
+                    //         title={'下载'}
+                    //     >
+                    //         <DownloadOutlined
+                    //             key={'download'}
+                    //             className={styles.downloadStyle}
+                    //             style={{
+                    //                 fontSize: 16,
+                    //                 marginInline: 2,
+                    //                 width: 16,
+                    //                 cursor: 'pointer'
+                    //             }}/></Tooltip>]
+                    // }}
                     scroll={{
                         x: 'max-content'
                     }}
@@ -1039,6 +1063,7 @@ const Detail: FC<DetailProps> = (props) => {
                                         options={[
                                             {label: '用户原因-未使用GPS', value: '用户原因-未使用GPS'},
                                             {label: '技术原因', value: '技术原因'},
+                                            {label: '会议取消', value: '会议取消'},
                                         ]}
                                     />
                                     : null
@@ -1092,20 +1117,35 @@ const Detail: FC<DetailProps> = (props) => {
                 <div style={{fontSize: 16, fontWeight: 600}}>签到表照片</div>
                 <Image.PreviewGroup>
                     {
-                        detail?.SignInList?.length ? detail?.SignInList?.map((item: any, index: number) => {
-                            return <Image
-                                key={`image${index}`}
-                                style={{padding: 12}}
-                                src={item.SignInImage || ''}
-                            />
-                        }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                            <Empty/>
-                        </Col>
+                        ((detail?.SignInList?.length || 0) + (detail?.ReceiptList?.length || 0)) ?
+                            <>
+                                {detail?.SignInList?.map((item: any, index: number) => {
+                                    return <Image
+                                        key={`image${index}`}
+                                        style={{padding: 12}}
+                                        src={item.SignInImage || ''}
+                                    />
+                                })}
+
+                                {detail?.ReceiptList?.length ?
+                                    <div style={{fontSize: 16, fontWeight: 600}}>小票照片</div> : null}
+
+                                {detail?.ReceiptList?.map((item: any, index: number) => {
+                                    return <Image
+                                        key={`image${index}`}
+                                        style={{padding: 12}}
+                                        src={item.ReceiptImage || ''}
+                                    />
+                                })}
+                            </>
+                            : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
+                                <Empty/>
+                            </Col>
                     }
                 </Image.PreviewGroup>
             </ProCard>
             <ProCard colSpan={16} style={{overflow: 'hidden', height: '100%', overflowY: 'scroll'}}>
-                <div style={{fontSize: 16, fontWeight: 600}}>用餐照片</div>
+                <div style={{fontSize: 16, fontWeight: 600}}>会议照片</div>
                 <Row>
                     <Image.PreviewGroup>
                         {
