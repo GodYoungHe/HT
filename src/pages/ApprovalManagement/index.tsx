@@ -298,7 +298,17 @@ const ApprovalManagement: React.FC = () => {
             }
         },
         {
-            title: 'onHold原因',
+            title: '是否OnHold',
+            valueType: 'select',
+            hideInTable: true,
+            dataIndex: 'isOnHold',
+            valueEnum: {
+                1: '是',
+                0: '否'
+            }
+        },
+        {
+            title: 'OnHold原因',
             valueType: 'select',
             dataIndex: 'onHoldReason',
             valueEnum: {
@@ -478,7 +488,8 @@ const ApprovalManagement: React.FC = () => {
             columns={columns}
             form={{
                 initialValues: {
-                    approveState: '0'
+                    approveState: '0',
+                    isOnHold: '0'
                 }
             }}
             formRef={form}

@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useRef, useState} from "react";
+import React, {FC, useEffect, useMemo, useRef, useState} from "react";
 import {Button, Card, Col, Divider, Empty, Image, message, Modal, Radio, Row, Select, Spin, Tabs} from "antd";
 import styles from '../index.less'
 import {
@@ -15,6 +15,8 @@ import {useModel} from "@@/exports";
 import {ExternalList, InnerList, ticketReopenDetail, ticketReopenReason} from "./data";
 import {stringifyNumbers} from "@/utils/format";
 import moment from "moment";
+import ZoomViewer from "@/components/ZoomViewer";
+import Viewer from 'react-viewer';
 
 interface DetailProps {
     open: boolean
@@ -53,6 +55,10 @@ const Detail: FC<DetailProps> = (props) => {
     const [reopenState, setReopenState] = useState<string>('')
 
     const [iSightDisable, setISightDisable] = useState(false)
+
+    const [viewerVisible, setViewerVisible] = useState('')
+
+    const [currentIndex, setCurrentIndex] = useState<number>(0)
 
     // 特殊订单form
     const [specialForm] = ProForm.useForm()
@@ -644,6 +650,7 @@ const Detail: FC<DetailProps> = (props) => {
         specialForm.validateFields().then(() => {
             Modal.confirm({
                 title: '是否确认保存？',
+                maskClosable: false,
                 onOk: () => {
                     setLoading(true)
                     specialForm.validateFields().then((values) => {
@@ -1111,95 +1118,308 @@ const Detail: FC<DetailProps> = (props) => {
         </div>
     )
 
+    const signInNode = useMemo(() => {
+        return ((detail?.SignInList?.length || 0) + (detail?.ReceiptList?.length || 0)) ?
+            (
+                <div>
+                    {
+                        detail?.SignInList?.length ? detail?.SignInList?.map((item: any, index: number) => {
+                            return <ZoomViewer
+                                index={index}
+                                key={`signIn-${index}`}
+                                id={`signIn-${index}`}
+                                style={{aspectRatio: 0.7, objectFit: 'cover', padding: 12}}
+                                src={item.SignInImage || ''}
+                                handleFullScreen={() => {
+                                    setCurrentIndex(index)
+                                    setViewerVisible('signIn')
+                                }}
+                                defaultScale={1.2}
+                                zoomSpeed={0.1}
+                            />
+                        }) : null
+                    }
+                    {detail?.ReceiptList?.length ?
+                        <div style={{fontSize: 16, fontWeight: 600}}>小票照片</div> : null}
+                    {
+                        detail?.ReceiptList?.length ? detail?.ReceiptList?.map((item: any, index: number) => {
+                            return <ZoomViewer
+                                index={index}
+                                key={`receipt-${index}`}
+                                id={`receipt-${index}`}
+                                style={{aspectRatio: 0.7, objectFit: 'cover', padding: 12}}
+                                src={item.ReceiptImage || ''}
+                                handleFullScreen={() => {
+                                    setCurrentIndex(index)
+                                    setViewerVisible('receipt')
+                                }}
+                                defaultScale={1.2}
+                                zoomSpeed={0.1}
+                            />
+                        }) : null
+                    }
+                </div>
+            )
+            : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
+                <Empty/>
+            </Col>
+
+    }, [detail])
+
+    const meetingNode = useMemo(() => {
+        return detail?.PhotoList?.length ? detail?.PhotoList?.map((item: any, index: number) => {
+            return <Col key={`col-${index}`} xl={{span: 12}} xxl={{span: 12}} style={{padding: 12}}>
+                <ZoomViewer
+                    index={index}
+                    id={`meal-${index}`}
+                    src={item.OrderImage || ''}
+                    style={{aspectRatio: 1, objectFit: 'cover'}}
+                    handleFullScreen={() => {
+                        setCurrentIndex(index)
+                        setViewerVisible('photo')
+                    }}
+                    defaultScale={1.8}
+                    zoomSpeed={0.1}
+                />
+            </Col>
+        }) : <Col xl={{span: 12}} xxl={{span: 12}} style={{padding: 12}}>
+            <Empty/>
+        </Col>
+
+    }, [detail])
+
+    const otherListNode = useMemo(() => {
+        return detail?.MailImageSrcFileList?.length ? detail?.MailImageSrcFileList?.map((item: any, index: number) => {
+            return <Col key={`col-${index}`} xl={{span: 12}} xxl={{span: 12}} style={{padding: 12}}>
+                <ZoomViewer
+                    index={index}
+                    id={`other-${index}`}
+                    src={item.MailImageSrcFile || ''}
+                    style={{aspectRatio: 1, objectFit: 'cover'}}
+                    handleFullScreen={() => {
+                        setCurrentIndex(index)
+                        setViewerVisible('other')
+                    }}
+                    defaultScale={1.8}
+                    zoomSpeed={0.1}
+                />
+            </Col>
+        }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
+            <Empty/>
+        </Col>
+
+    }, [detail])
+
+    const gpsListNode = useMemo(() => {
+        return detail?.WithoutGPSFileList?.length ? detail?.WithoutGPSFileList?.map((item: any, index: number) => {
+            return <Col key={`col-${index}`} xl={{span: 12}} xxl={{span: 12}} style={{padding: 12}}>
+                <ZoomViewer
+                    index={index}
+                    id={`gps-${index}`}
+                    src={item.WithoutGPSFile || ''}
+                    style={{aspectRatio: 1, objectFit: 'cover'}}
+                    handleFullScreen={() => {
+                        setCurrentIndex(index)
+                        setViewerVisible('gps')
+                    }}
+                    defaultScale={1.8}
+                    zoomSpeed={0.1}
+                />
+            </Col>
+        }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
+            <Empty/>
+        </Col>
+
+    }, [detail])
+
     const pictureNode = (
         <ProCard split={'vertical'} style={{height: '80vh'}}>
             <ProCard colSpan={8} style={{overflow: 'hidden', height: '100%', overflowY: 'scroll'}}>
                 <div style={{fontSize: 16, fontWeight: 600}}>签到表照片</div>
-                <Image.PreviewGroup>
-                    {
-                        ((detail?.SignInList?.length || 0) + (detail?.ReceiptList?.length || 0)) ?
-                            <>
-                                {detail?.SignInList?.map((item: any, index: number) => {
-                                    return <Image
-                                        key={`image${index}`}
-                                        style={{padding: 12}}
-                                        src={item.SignInImage || ''}
-                                    />
-                                })}
+                {signInNode}
+                <Viewer
+                    images={detail?.SignInList?.length ?
+                        detail?.SignInList?.map((item: any) => {
+                            return {
+                                src: item.SignInImage
+                            }
+                        })
+                        : []}
+                    visible={viewerVisible === 'signIn'}
+                    onClose={() => {
+                        setCurrentIndex(0)
+                        setViewerVisible('')
+                    }}
+                    activeIndex={currentIndex}
+                    onChange={(_, index) => {
+                        setCurrentIndex(index)
+                    }}
+                    scalable={false}
+                />
+                <Viewer
+                    images={detail?.ReceiptList?.length ?
+                        detail?.ReceiptList?.map((item: any) => {
+                            return {
+                                src: item.ReceiptImage
+                            }
+                        })
+                        : []}
+                    visible={viewerVisible === 'receipt'}
+                    onClose={() => {
+                        setCurrentIndex(0)
+                        setViewerVisible('')
+                    }}
+                    activeIndex={currentIndex}
+                    onChange={(_, index) => {
+                        setCurrentIndex(index)
+                    }}
+                    scalable={false}
+                />
+                {/*<Image.PreviewGroup>*/}
+                {/*    {*/}
+                {/*        ((detail?.SignInList?.length || 0) + (detail?.ReceiptList?.length || 0)) ?*/}
+                {/*            <>*/}
+                {/*                {detail?.SignInList?.map((item: any, index: number) => {*/}
+                {/*                    return <Image*/}
+                {/*                        key={`image${index}`}*/}
+                {/*                        style={{padding: 12}}*/}
+                {/*                        src={item.SignInImage || ''}*/}
+                {/*                    />*/}
+                {/*                })}*/}
 
-                                {detail?.ReceiptList?.length ?
-                                    <div style={{fontSize: 16, fontWeight: 600}}>小票照片</div> : null}
+                {/*                {detail?.ReceiptList?.length ?*/}
+                {/*                    <div style={{fontSize: 16, fontWeight: 600}}>小票照片</div> : null}*/}
 
-                                {detail?.ReceiptList?.map((item: any, index: number) => {
-                                    return <Image
-                                        key={`image${index}`}
-                                        style={{padding: 12}}
-                                        src={item.ReceiptImage || ''}
-                                    />
-                                })}
-                            </>
-                            : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                <Empty/>
-                            </Col>
-                    }
-                </Image.PreviewGroup>
+                {/*                {detail?.ReceiptList?.map((item: any, index: number) => {*/}
+                {/*                    return <Image*/}
+                {/*                        key={`image${index}`}*/}
+                {/*                        style={{padding: 12}}*/}
+                {/*                        src={item.ReceiptImage || ''}*/}
+                {/*                    />*/}
+                {/*                })}*/}
+                {/*            </>*/}
+                {/*            : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                {/*                <Empty/>*/}
+                {/*            </Col>*/}
+                {/*    }*/}
+                {/*</Image.PreviewGroup>*/}
             </ProCard>
             <ProCard colSpan={16} style={{overflow: 'hidden', height: '100%', overflowY: 'scroll'}}>
                 <div style={{fontSize: 16, fontWeight: 600}}>会议照片</div>
                 <Row>
-                    <Image.PreviewGroup>
-                        {
-                            detail?.PhotoList?.length ? detail?.PhotoList?.map((item: any, index: number) => {
-                                return <Col key={`col-${index}`} xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                    <Image
-                                        className={'image'}
-                                        style={{aspectRatio: 1, objectFit: 'cover'}}
-                                        src={item.OrderImage || ''}
-                                    />
-                                </Col>
-                            }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                <Empty/>
-                            </Col>
-                        }
-                    </Image.PreviewGroup>
+                    {/*<Image.PreviewGroup>*/}
+                    {/*    {*/}
+                    {/*        detail?.PhotoList?.length ? detail?.PhotoList?.map((item: any, index: number) => {*/}
+                    {/*            return <Col key={`col-${index}`} xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                    {/*                <Image*/}
+                    {/*                    className={'image'}*/}
+                    {/*                    style={{aspectRatio: 1, objectFit: 'cover'}}*/}
+                    {/*                    src={item.OrderImage || ''}*/}
+                    {/*                />*/}
+                    {/*            </Col>*/}
+                    {/*        }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                    {/*            <Empty/>*/}
+                    {/*        </Col>*/}
+                    {/*    }*/}
+                    {/*</Image.PreviewGroup>*/}
+                    {meetingNode}
+                    <Viewer
+                        images={detail?.PhotoList?.length ?
+                            detail?.PhotoList?.map((item: any) => {
+                                return {
+                                    src: item.OrderImage
+                                }
+                            })
+                            : []}
+                        visible={viewerVisible === 'photo'}
+                        onClose={() => {
+                            setCurrentIndex(0)
+                            setViewerVisible('')
+                        }}
+                        activeIndex={currentIndex}
+                        onChange={(_, index) => {
+                            setCurrentIndex(index)
+                        }}
+                        scalable={false}
+                    />
                 </Row>
                 <Divider/>
                 <div style={{fontSize: 16, fontWeight: 600}}>其他文件</div>
                 <Row>
-                    <Image.PreviewGroup>
-                        {
-                            detail?.MailImageSrcFileList?.length ? detail?.MailImageSrcFileList?.map((item: any, index: number) => {
-                                return <Col key={`col-${index}`} xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                    <Image
-                                        className={'image'}
-                                        style={{aspectRatio: 1, objectFit: 'cover'}}
-                                        src={item.MailImageSrcFile || ''}
-                                    />
-                                </Col>
-                            }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                <Empty/>
-                            </Col>
-                        }
-                    </Image.PreviewGroup>
+                    {/*<Image.PreviewGroup>*/}
+                    {/*    {*/}
+                    {/*        detail?.MailImageSrcFileList?.length ? detail?.MailImageSrcFileList?.map((item: any, index: number) => {*/}
+                    {/*            return <Col key={`col-${index}`} xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                    {/*                <Image*/}
+                    {/*                    className={'image'}*/}
+                    {/*                    style={{aspectRatio: 1, objectFit: 'cover'}}*/}
+                    {/*                    src={item.MailImageSrcFile || ''}*/}
+                    {/*                />*/}
+                    {/*            </Col>*/}
+                    {/*        }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                    {/*            <Empty/>*/}
+                    {/*        </Col>*/}
+                    {/*    }*/}
+                    {/*</Image.PreviewGroup>*/}
+                    {otherListNode}
+                    <Viewer
+                        images={detail?.MailImageSrcFileList?.length ?
+                            detail?.MailImageSrcFileList?.map((item: any) => {
+                                return {
+                                    src: item.MailImageSrcFile
+                                }
+                            })
+                            : []}
+                        visible={viewerVisible === 'other'}
+                        onClose={() => {
+                            setCurrentIndex(0)
+                            setViewerVisible('')
+                        }}
+                        activeIndex={currentIndex}
+                        onChange={(_, index) => {
+                            setCurrentIndex(index)
+                        }}
+                        scalable={false}
+                    />
                 </Row>
                 <Divider/>
                 <div style={{fontSize: 16, fontWeight: 600}}>未使用GPS拍照支持文件</div>
                 <Row>
-                    <Image.PreviewGroup>
-                        {
-                            detail?.WithoutGPSFileList?.length ? detail?.WithoutGPSFileList?.map((item: any, index: number) => {
-                                return <Col key={`col-${index}`} xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                    <Image
-                                        className={'image'}
-                                        style={{aspectRatio: 1, objectFit: 'cover'}}
-                                        src={item.WithoutGPSFile || ''}
-                                    />
-                                </Col>
-                            }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>
-                                <Empty/>
-                            </Col>
-                        }
-                    </Image.PreviewGroup>
+                    {/*<Image.PreviewGroup>*/}
+                    {/*    {*/}
+                    {/*        detail?.WithoutGPSFileList?.length ? detail?.WithoutGPSFileList?.map((item: any, index: number) => {*/}
+                    {/*            return <Col key={`col-${index}`} xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                    {/*                <Image*/}
+                    {/*                    className={'image'}*/}
+                    {/*                    style={{aspectRatio: 1, objectFit: 'cover'}}*/}
+                    {/*                    src={item.WithoutGPSFile || ''}*/}
+                    {/*                />*/}
+                    {/*            </Col>*/}
+                    {/*        }) : <Col xl={{span: 8}} xxl={{span: 6}} style={{padding: 12}}>*/}
+                    {/*            <Empty/>*/}
+                    {/*        </Col>*/}
+                    {/*    }*/}
+                    {/*</Image.PreviewGroup>*/}
+                    {gpsListNode}
+                    <Viewer
+                        images={detail?.WithoutGPSFileList?.length ?
+                            detail?.WithoutGPSFileList?.map((item: any) => {
+                                return {
+                                    src: item.WithoutGPSFile
+                                }
+                            })
+                            : []}
+                        visible={viewerVisible === 'gps'}
+                        onClose={() => {
+                            setCurrentIndex(0)
+                            setViewerVisible('')
+                        }}
+                        activeIndex={currentIndex}
+                        onChange={(_, index) => {
+                            setCurrentIndex(index)
+                        }}
+                        scalable={false}
+                    />
                 </Row>
             </ProCard>
         </ProCard>
@@ -1254,7 +1474,8 @@ const Detail: FC<DetailProps> = (props) => {
                     submitValues.forPMO = 1
                     submitValues.reasonForPMO = onHoldValues.reasonForPMO
                 }
-                submitValues.isReopen = detail.isReopen || 0
+                submitValues.isReopen = detail.IsReopen || 0
+
                 submitValues.uid = detail.UID
                 submitValues.reasonForApplier = onHoldValues.reasonForApplier
 
@@ -1343,12 +1564,13 @@ const Detail: FC<DetailProps> = (props) => {
 
     return <Modal
         open={open}
+        maskClosable={false}
         onCancel={() => {
             onCancel()
             initAllState()
         }}
         title={'订单审批'}
-        width={'80%'}
+        width={'100%'}
         destroyOnClose
         footer={<div>
             {(info && submitButtonVisible) ? <Button
@@ -1358,6 +1580,7 @@ const Detail: FC<DetailProps> = (props) => {
                 onClick={() => {
                     Modal.confirm({
                         title: '是否确认提交?',
+                        maskClosable: false,
                         onOk: () => {
                             handleSubmit()
                         }

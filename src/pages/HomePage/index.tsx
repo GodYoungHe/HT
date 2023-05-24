@@ -4,7 +4,7 @@ import styles from './index.less'
 import {
     CheckCircleFilled,
     ClockCircleFilled,
-    CloseCircleFilled,
+    CloseCircleFilled, ExclamationCircleFilled,
     HourglassFilled,
     PieChartFilled
 } from "@ant-design/icons";
@@ -172,6 +172,13 @@ const HomePage: React.FC = () => {
                     `${data?.iSightCnt || 0}`,
                     '#fde9ec',
                     <CloseCircleFilled style={{fontSize: '3rem', color: '#fa3e64', paddingRight: 10}}/>
+                )}
+                {middleCardNode(
+                    'iSight No.',
+                    '当前所有iSight No.的数量',
+                    `${data?.iSightNoCnt || 0}`,
+                    '#fde9ec',
+                    <ExclamationCircleFilled style={{fontSize: '3rem', color: '#fdbc3e', paddingRight: 10}}/>
                 )}
             </Row>
         </Card>

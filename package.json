@@ -17,6 +17,7 @@
     "antd": "^5.0.0",
     "cross-env": "^7.0.3",
     "react-resize-observer": "^1.1.1",
+    "react-viewer": "^3.2.2",
     "resize-observer-polyfill": "^1.5.1"
   },
   "devDependencies": {

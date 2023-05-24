@@ -111,6 +111,7 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
         form.validateFields().then(() => {
             Modal.confirm({
                 title: '是否确认提交',
+                maskClosable: false,
                 onOk: () => {
 
                     const values = form.getFieldsValue()
@@ -151,6 +152,7 @@ const UploadFiles: FC<UploadFilesProps> = (props) => {
         title={'上传文件'}
         width={950}
         destroyOnClose={true}
+        maskClosable={false}
         onCancel={() => {
             form.resetFields()
             setDataSource([])

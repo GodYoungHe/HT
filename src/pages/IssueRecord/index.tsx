@@ -108,6 +108,7 @@ const IssueRecord: React.FC = () => {
                         onClick={() => {
                             Modal.confirm({
                                 title: '是否确认计次?',
+                                maskClosable: false,
                                 onOk: () => {
                                     IssueConfirm({
                                         htCode: code
@@ -135,6 +136,7 @@ const IssueRecord: React.FC = () => {
                             onClick={()=>{
                                 Modal.confirm({
                                     title: '是否取消计次？',
+                                    maskClosable: false,
                                     onOk: () => {
                                         IssueTimeOrder({
                                             htCode: code
@@ -156,6 +158,7 @@ const IssueRecord: React.FC = () => {
                         onClick={() => {
                             Modal.confirm({
                                 title: '是否确认申诉?',
+                                maskClosable: false,
                                 onOk: () => {
                                     IssueAppeal({
                                         htCode: code

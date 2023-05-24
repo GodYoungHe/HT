@@ -20,7 +20,8 @@ const Header: React.FC = () => {
                         //https://catering-prod.igskapp.com/ThirdApprove/
                         // window.location.href = 'https://wxm-dev.igskapp.com/ThirdApprove/T/Home/Exit'
                         window.location.href = 'https://catering-prod.igskapp.com/ThirdApprove/T/Home/Exit'
-                    }
+                    },
+                    maskClosable: false
                 })
             }}
         >退出登录</a>

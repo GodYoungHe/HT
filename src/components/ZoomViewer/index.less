@@ -1,0 +1,27 @@
+.imageStyle {
+  height: 100%;
+  min-height: 0 !important;
+  border: 1px solid #ccc;
+
+  :global(.react-viewer-inline) {
+    min-height: 0 !important;
+  }
+
+  :global(.react-viewer-mask) {
+    background-color: transparent;
+  }
+
+  :global(.react-viewer-footer) {
+    background-color: rgba(204, 204, 204, 0.7);
+  }
+
+  :global(.loading-wrap) {
+    position: absolute;
+    top: calc(50% - 50px)
+  }
+
+  :global(.react-viewer-mask ) {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+  }
+
+}

@@ -17,6 +17,7 @@ const CreateForm: React.FC<PropsWithChildren<CreateFormProps>> = (props) => {
       open={modalVisible}
       onCancel={() => onCancel()}
       footer={null}
+      maskClosable={false}
     >
       {props.children}
     </Modal>

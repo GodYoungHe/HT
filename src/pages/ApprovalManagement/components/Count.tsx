@@ -91,6 +91,7 @@ const Count: FC<CountProps> = (props) => {
 
     return <Modal
         open={open}
+        maskClosable={false}
         onCancel={() => {
             formRef.resetFields()
             setSelectId('')
